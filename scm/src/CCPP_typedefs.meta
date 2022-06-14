@@ -90,6 +90,14 @@
   dimensions = (horizontal_loop_extent,number_of_species_for_aerosol_optical_depth)
   type = real
   kind = kind_phys
+[airdens]
+  standard_name = air_density
+  long_name = air density
+  units = kg m-3
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [alb1d]
   standard_name = surface_albedo_perturbation
   long_name = surface albedo perturbation
@@ -441,6 +449,30 @@
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
+[da_ls]
+  standard_name = change_in_saturated_area_fraction_due_to_large_scale_processes
+  long_name = change in saturated volume fraction due to large-scale processes
+  units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[dcond_ls]
+  standard_name = change_in_cloud_condensate_due_to_nonconvective_condensation
+  long_name = change in cloud condensate due to nonconvective condensation
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[D_eros]
+  standard_name = tiedtke_cloud_erosion
+  long_name = erosion term from Tiedtke prognostic clouds
+  units = 1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [dd_mf]
   standard_name = instantaneous_atmosphere_downdraft_convective_mass_flux
   long_name = (downdraft mass flux) * delt
@@ -476,6 +508,14 @@
   dimensions = (horizontal_loop_extent,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
+[delta_cf]
+  standard_name = change_in_saturated_area_fraction_due
+  long_name = change in saturated volume fraction
+  units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [dlength]
   standard_name = characteristic_grid_length_scale
   long_name = representative horizontal length scale of grid box
@@ -585,6 +625,14 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+[dqsdT]
+  standard_name = derivative_of_saturation_specific_humidity_with_respect_to_temperature
+  long_name = derivative of saturation specific humidity with respect to temperature
+  units = kg kg-1 K-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [dqsfc1]
   standard_name = instantaneous_surface_upward_latent_heat_flux
   long_name = surface upward latent heat flux
@@ -1220,6 +1268,14 @@
   dimensions = (horizontal_loop_extent,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
+[hom]
+  standard_name = homogeneous_ice_nucleation_present
+  long_name = homogeneous ice nucleation is present if > 0
+  units = 1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [icemp]
   standard_name = lwe_thickness_of_ice_amount
   long_name = explicit ice fall on physics timestep
@@ -1366,12 +1422,28 @@
   units = count
   dimensions = ()
   type = integer
+[L_cp_dqsdT]
+  standard_name = dimensionless_derivative_of_saturation_specific_humidity_with_respect_to_temperature
+  long_name = dimensionless derivative of saturation specific humidity with respect to temperature
+  units = 1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [mbota]
   standard_name = model_layer_number_at_cloud_base
   long_name = vertical indices for low, middle and high cloud bases
   units = index
   dimensions = (horizontal_loop_extent,3)
   type = integer
+[mc_full]
+  standard_name = net_convective_mass_flux
+  long_name = net convective mass flux
+  units = kg m-2 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [mg3_as_mg2]
   standard_name = flag_mg3_as_mg2
   long_name = flag for controlling prep for Morrison-Gettelman microphysics
@@ -1789,6 +1861,14 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+[rhc_min]
+  standard_name = minimum_critical_relative_humidity
+  long_name = critical relative humidity
+  units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [rho1]
   standard_name = air_density_at_lowest_model_layer
   long_name = air density at lowest model layer
@@ -1803,6 +1883,14 @@
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
+[sa]
+  standard_name = change_of_cloud_area_fraction
+  long_name = change of cloud area fraction
+  units = frac
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [save_q(:,:,index_of_ozone_mixing_ratio_in_tracer_concentration_array)]
   standard_name = ozone_mixing_ratio_save
   long_name = ozone mixing ratio before entering a physics scheme
@@ -2005,6 +2093,14 @@
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
+[sq]
+  standard_name = change_of_specific_humidity_due_to_tiedtke_condensation_adjustment
+  long_name = change of specific humidity due to tiedtke condensation adjustment
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [stress]
   standard_name = surface_wind_stress
   long_name = surface wind stress
@@ -2163,6 +2259,22 @@
   units = count
   dimensions = ()
   type = integer
+[U_ca]
+  standard_name = relative_humidity_outside_convective_clouds
+  long_name = relative humidity outside of convective cloud portion of grid box
+  units = frac
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[U01]
+  standard_name = maximum_nonconvective_cloud_area_fraction
+  long_name = maximum portion of nonconvective grid box area that can be cloudy while maintaining grid-box-mean relative humidity
+  units = frac
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [uustar_water]
   standard_name = surface_friction_velocity_over_water
   long_name = surface friction velocity over water
@@ -2413,6 +2525,39 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+[ql_upd]
+  standard_name = cloud_liquid_water_mixing_ratio_of_new_state_after_realizability
+  long_name = ratio of mass of cloud water to mass of dry air plus vapor (without condensates) updated by physics  after realizability check
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  intent = out
+  active = (do_tiedtke_prognostic_clouds)
+[qi_upd]
+  standard_name = cloud_ice_mixing_ratio_of_new_state_after_realizability
+  long_name = ratio of mass of ice water to mass of dry air plus vapor (without condensates) updated by physics  after realizability check
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[qa_upd]
+  standard_name = cloud_area_fraction_in_atmosphere_layer_of_new_state_after_realizability
+  long_name = cloud fraction updated by physics after realizability check
+  units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[qvg]
+  standard_name = equilibrium_specific_humdidity_in_clear_area_fraction
+  long_name = equilibrium specific humdidity in clear area fraction
+  units =
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [qs_lay]
   standard_name = saturation_vapor_pressure
   long_name = saturation vapor pressure
@@ -2429,6 +2574,30 @@
   type = real
   kind = kind_phys
   active = (flag_for_rrtmgp_radiation_scheme)
+[q_sat]
+  standard_name = saturation_specific_humidity
+  long_name = saturation specific humidity
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[q_sat_l]
+  standard_name = saturation_specific_humidity_with_respect_to_liquid
+  long_name = saturation specific humidity with respect to liquid
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[q_sat_i]
+  standard_name = saturation_specific_humidity_with_respect_to_ice
+  long_name = saturation specific humidity with respect to ice
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [p_lay]
   standard_name = air_pressure_at_layer_for_RRTMGP
   long_name = air pressure layer
@@ -2476,7 +2645,7 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
-  active = (flag_for_rrtmgp_radiation_scheme)
+  active = (flag_for_rrtmgp_radiation_scheme .or. do_tiedtke_prognostic_clouds)
 [deltaZ]
   standard_name = layer_thickness
   long_name = layer_thickness

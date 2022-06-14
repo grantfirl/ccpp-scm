@@ -214,6 +214,9 @@ SCHEME_FILES = [
     'ccpp/physics/physics/sfc_nst_post.f'                   ,
     'ccpp/physics/physics/sfc_ocean.F'                      ,
     'ccpp/physics/physics/sfc_sice.f'                       ,
+    'ccpp/physics/physics/tiedtke_prog_clouds_pre.F90'      ,
+    'ccpp/physics/physics/tiedtke_prog_clouds.F90'          ,
+    'ccpp/physics/physics/tiedtke_prog_clouds_post.F90'     ,
     'ccpp/physics/physics/mp_fer_hires.F90'                 ,
     # SMOKE
     'ccpp/physics/smoke/rrfs_smoke_wrapper.F90'             ,
@@ -267,7 +270,8 @@ SUITES_DIR = 'ccpp/suites'
 
 # Directory where to write static API to
 STATIC_API_DIR = 'scm/src/'
-STATIC_API_SRCFILE = 'scm/src/CCPP_STATIC_API.sh'
+STATIC_API_CMAKEFILE = 'scm/src/CCPP_STATIC_API.cmake'
+STATIC_API_SOURCEFILE = 'scm/src/CCPP_STATIC_API.sh'
 
 # Directory for writing HTML pages generated from metadata files
 METADATA_HTML_OUTPUT_DIR = 'ccpp/physics/physics/docs'

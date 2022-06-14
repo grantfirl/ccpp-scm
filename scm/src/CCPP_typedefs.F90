@@ -59,6 +59,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: adjvisdfu(:)       => null()  !<
     real (kind=kind_phys), pointer      :: adjvisdfd(:)       => null()  !<
     real (kind=kind_phys), pointer      :: aerodp(:,:)        => null()  !<
+    real (kind=kind_phys), pointer      :: airdens(:,:)       => null()
     real (kind=kind_phys), pointer      :: alb1d(:)           => null()  !<
     real (kind=kind_phys), pointer      :: alpha(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: bexp1d(:)          => null()  !<
@@ -96,13 +97,18 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: ctei_r(:)          => null()  !<
     real (kind=kind_phys), pointer      :: ctei_rml(:)        => null()  !<
     real (kind=kind_phys), pointer      :: cumabs(:)          => null()  !<
+    real (kind=kind_phys), pointer      :: da_ls(:,:)         => null()
+    real (kind=kind_phys), pointer      :: dcond_ls(:,:)      => null()
+    real (kind=kind_phys), pointer      :: D_eros(:,:)        => null()
     real (kind=kind_phys), pointer      :: dd_mf(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: de_lgth(:)         => null()  !<
     real (kind=kind_phys), pointer      :: del(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: del_gz(:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: delr(:,:)          => null()  !<
+    real (kind=kind_phys), pointer      :: delta_cf(:,:)      => null()  !<
     real (kind=kind_phys), pointer      :: dlength(:)         => null()  !<
     real (kind=kind_phys), pointer      :: dqdt(:,:,:)        => null()  !<
+    real (kind=kind_phys), pointer      :: dqsdT(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: dqsfc1(:)          => null()  !<
     real (kind=kind_phys), pointer      :: drain(:)           => null()  !<
     real (kind=kind_phys), pointer      :: dtdt(:,:)          => null()  !<
@@ -180,6 +186,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: htlw0(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: htswc(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: htsw0(:,:)         => null()  !<
+    real (kind=kind_phys), pointer      :: hom(:,:)           => null()
     !
     real (kind=kind_phys), pointer      :: icemp(:)           => null()  !<
     logical,               pointer      :: dry(:)             => null()  !<
@@ -205,7 +212,9 @@ module CCPP_typedefs
     integer                             :: levi                          !<
     integer                             :: lmk                           !<
     integer                             :: lmp                           !<
+    real (kind=kind_phys), pointer      :: L_cp_dqsdT(:,:)    => null()  !<
     integer,               pointer      :: mbota(:,:)         => null()  !<
+    real (kind=kind_phys), pointer      :: mc_full(:,:)       => null()  !<
     logical                             :: mg3_as_mg2                    !<
     integer,               pointer      :: mtopa(:,:)         => null()  !<
     integer                             :: nbdlw                         !<
@@ -240,16 +249,23 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: plyr(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: prcpmp(:)          => null()  !<
     real (kind=kind_phys), pointer      :: prnum(:,:)         => null()  !<
+    real (kind=kind_phys), pointer      :: qa_upd(:,:)        => null()
     real (kind=kind_phys), pointer      :: q2mp(:)            => null()  !<
     real (kind=kind_phys), pointer      :: qgl(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: qicn(:,:)          => null()  !<
+    real (kind=kind_phys), pointer      :: qi_upd(:,:)        => null()
     real (kind=kind_phys), pointer      :: qlcn(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: qlyr(:,:)          => null()  !<
+    real (kind=kind_phys), pointer      :: ql_upd(:,:)        => null()
     real (kind=kind_phys), pointer      :: qrn(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: qsnw(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: qss_ice(:)         => null()  !<
     real (kind=kind_phys), pointer      :: qss_land(:)        => null()  !<
     real (kind=kind_phys), pointer      :: qss_water(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: qvg(:,:)           => null()
+    real (kind=kind_phys), pointer      :: q_sat(:,:)         => null()  !<
+    real (kind=kind_phys), pointer      :: q_sat_l(:,:)       => null()  !<
+    real (kind=kind_phys), pointer      :: q_sat_i(:,:)       => null()  !<
     logical                             :: radar_reset                   !<
     real (kind=kind_phys)               :: raddt                         !<
     real (kind=kind_phys), pointer      :: rainmp(:)          => null()  !<
@@ -264,7 +280,9 @@ module CCPP_typedefs
     logical                             :: max_hourly_reset              !<
     logical                             :: ext_diag_thompson_reset       !<
     real (kind=kind_phys), pointer      :: rhc(:,:)           => null()  !<
+    real (kind=kind_phys), pointer      :: rhc_min(:,:)       => null()  !<
     real (kind=kind_phys), pointer      :: runoff(:)          => null()  !<
+    real (kind=kind_phys), pointer      :: sa(:,:)            => null()
     real (kind=kind_phys), pointer      :: save_q(:,:,:)      => null()  !<
     real (kind=kind_phys), pointer      :: save_t(:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: save_tcp(:,:)      => null()  !<
@@ -282,6 +300,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: snohf(:)           => null()  !<
     real (kind=kind_phys), pointer      :: snowmp(:)          => null()  !<
     real (kind=kind_phys), pointer      :: snowmt(:)          => null()  !<
+    real (kind=kind_phys), pointer      :: sq(:,:)            => null()
     real (kind=kind_phys), pointer      :: stress(:)          => null()  !<
     real (kind=kind_phys), pointer      :: stress_ice(:)      => null()  !<
     real (kind=kind_phys), pointer      :: stress_land(:)     => null()  !<
@@ -305,6 +324,8 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: tsurf_ice(:)       => null()  !<
     real (kind=kind_phys), pointer      :: tsurf_land(:)      => null()  !<
     real (kind=kind_phys), pointer      :: tsurf_water(:)     => null()  !<
+    real (kind=kind_phys), pointer      :: U_ca(:,:)          => null()
+    real (kind=kind_phys), pointer      :: U01(:,:)           => null()
     real (kind=kind_phys), pointer      :: ud_mf(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: uustar_ice(:)      => null()  !<
     real (kind=kind_phys), pointer      :: uustar_land(:)     => null()  !<
@@ -685,7 +706,6 @@ contains
     if (Model%do_RRTMGP) then
        allocate (Interstitial%tracer               (IM, Model%levs,Model%ntrac))
        allocate (Interstitial%tv_lay               (IM, Model%levs))
-       allocate (Interstitial%relhum               (IM, Model%levs))
        allocate (Interstitial%qs_lay               (IM, Model%levs))
        allocate (Interstitial%q_lay                (IM, Model%levs))
        allocate (Interstitial%deltaZ               (IM, Model%levs))
@@ -906,6 +926,34 @@ contains
        allocate (Interstitial%t2mmp (IM))
        allocate (Interstitial%q2mp  (IM))
     end if
+    if (Model%do_RRTMGP .or. do_tiedtke_prognostic_clouds) then
+      allocate (Interstitial%relhum               (IM, Model%levs))
+    end if
+    ! Tiedtke prognostic clouds
+    if (Model%tiedtke_prog_clouds) then
+      allocate (Interstitial%airdens       (IM,Model%levs))
+      allocate (Interstitial%da_ls         (IM,Model%levs))
+      allocate (Interstitial%dcond_ls      (IM,Model%levs))
+      allocate (Interstitial%D_eros        (IM,Model%levs))
+      allocate (Interstitial%delta_cf      (IM,Model%levs))
+      allocate (Interstitial%dqsdT         (IM,Model%levs))
+      allocate (Interstitial%hom           (IM,Model%levs))
+      allocate (Interstitial%L_cp_dqsdT    (IM,Model%levs))
+      allocate (Interstitial%mc_full       (IM,Model%levs))
+      allocate (Interstitial%ql_upd        (IM,Model%levs))
+      allocate (Interstitial%qi_upd        (IM,Model%levs))
+      allocate (Interstitial%qa_upd        (IM,Model%levs))
+      allocate (Interstitial%qvg           (IM,Model%levs))
+      allocate (Interstitial%q_sat         (IM,Model%levs))
+      allocate (Interstitial%q_sat_l       (IM,Model%levs))
+      allocate (Interstitial%q_sat_i       (IM,Model%levs))
+      allocate (Interstitial%rhc_min       (IM,Model%levs))
+      allocate (Interstitial%sa            (IM,Model%levs))
+      allocate (Interstitial%sq            (IM,Model%levs))
+      allocate (Interstitial%U_ca          (IM,Model%levs))
+      allocate (Interstitial%U01           (IM,Model%levs))
+    end if
+    
     !
     ! Set components that do not change
     Interstitial%frain            = Model%dtf/Model%dtp
@@ -1544,6 +1592,31 @@ contains
       Interstitial%radar_reset = .true.
     else
       Interstitial%radar_reset = mod(Model%kdt-1, nint(Model%nsradar_reset/Model%dtp)) == 0
+    end if
+    
+    if (Model%tiedtke_prog_clouds) then
+      Interstitial%airdens   = clear_val
+      Interstitial%da_ls     = clear_val
+      Interstitial%dcond_ls  = clear_val
+      Interstitial%D_eros    = clear_val
+      Interstitial%delta_cf  = clear_val
+      Interstitial%dqsdT     = clear_val
+      Interstitial%hom       = clear_val
+      Interstitial%L_cp_dqsdT= clear_val
+      Interstitial%mc_full   = clear_val
+      Interstitial%qa_upd    = clear_val
+      Interstitial%qi_upd    = clear_val
+      Interstitial%ql_upd    = clear_val
+      Interstitial%qvg       = clear_val
+      Interstitial%q_sat     = clear_val
+      Interstitial%q_sat_l   = clear_val
+      Interstitial%q_sat_i   = clear_val
+      Interstitial%relhum    = clear_val
+      Interstitial%rhc_min   = clear_val
+      Interstitial%sa        = clear_val
+      Interstitial%sq        = clear_val
+      Interstitial%U_ca      = clear_val
+      Interstitial%U01       = clear_val
     end if
     !
   end subroutine gfs_interstitial_phys_reset

@@ -824,7 +824,6 @@ module GFS_typedefs
     integer              :: fprcp              !< no prognostic rain and snow (MG)
     integer              :: pdfflag            !< pdf flag for MG macrophysics
     real(kind=kind_phys) :: mg_dcs             !< Morrison-Gettelman microphysics parameters
-    real(kind=kind_phys) :: mg_qcvar
     real(kind=kind_phys) :: mg_ts_auto_ice(2)  !< ice auto conversion time scale
     real(kind=kind_phys) :: mg_rhmini          !< relative humidity threshold parameter for nucleating ice
 
@@ -891,7 +890,49 @@ module GFS_typedefs
 
     !--- Thompson,GFDL mp parameter
     logical              :: lrefres          !< flag for radar reflectivity in restart file
-
+    
+    !--- M-G MP, Tiedtke prog cloud parameters
+    real(kind=kind_phys) :: qcvar
+    
+    !--- Tiedtke prognostic cloud scheme parameters
+    !real(kind=kind_phys) :: u00 !GJF: use rhgrd that already exists for FA scheme
+    logical              :: tiedtke_prog_clouds
+    logical              :: u00_profile
+    real(kind=kind_phys) :: eros_scale
+    logical              :: eros_choice
+    real(kind=kind_phys) :: eros_scale_c
+    real(kind=kind_phys) :: eros_scale_t
+    real(kind=kind_phys) :: mc_thresh
+    real(kind=kind_phys) :: diff_thresh
+    real(kind=kind_phys) :: efact
+    logical              :: add_ahuco
+    logical              :: use_qabar
+    logical              :: rk_repartition_first
+    logical              :: do_aero_eros
+    real(kind=kind_phys) :: ae_lb
+    real(kind=kind_phys) :: ae_ub
+    real(kind=kind_phys) :: ae_N_lb
+    real(kind=kind_phys) :: ae_N_ub
+    logical              :: include_neg_mc
+    logical              :: single_gaussian_pdf
+    real(kind=kind_phys) :: qmin
+    !real(kind=kind_phys) :: qcvar !GJF: can combine with mg_qcvar
+    logical              :: limit_conv_cloud_frac
+    real(kind=kind_phys) :: dmin
+    real(kind=kind_phys) :: cfact
+    integer              :: super_ice_opt
+    !logical              :: do_pdf_clouds  !GJF: use pdfcld
+    integer              :: betaP
+    real(kind=kind_phys) :: qthalfwidth
+    integer              :: nsublevels
+    integer              :: kmap
+    integer              :: kord
+    logical              :: pdf_org
+    real(kind=kind_phys) :: dtcloud, inv_dtcloud
+    logical              :: do_rk_microphys
+    logical              :: total_activation
+    
+    
     !--- land/surface model parameters
     integer              :: lsm             !< flag for land surface model lsm=1 for noah lsm
     integer              :: lsm_noah=1      !< flag for NOAH land surface model
@@ -976,7 +1017,7 @@ module GFS_typedefs
     logical              :: moist_adj       !< flag for moist convective adjustment
     logical              :: cscnv           !< flag for Chikira-Sugiyama convection
     logical              :: cal_pre         !< flag controls precip type algorithm
-    real(kind=kind_phys) :: rhgrd           !< fer_hires microphysics only
+    real(kind=kind_phys) :: rhgrd           !< relative humidity threshold for condensation (F-A MP and Tiedtke prog clouds)
     logical              :: spec_adv        !< flag for individual cloud species advected
     integer              :: icloud          !< cloud effect to the optical depth in radiation; this also controls the cloud fraction options
                                             !<  3: with cloud effect, and use cloud fraction option 3, based on Sundqvist et al. (1989)
@@ -2978,7 +3019,6 @@ module GFS_typedefs
 !---Max hourly
     real(kind=kind_phys) :: avg_max_length = 3600.                 !< reset value in seconds for max hourly
 !--- Ferrier-Aligo microphysical parameters
-    real(kind=kind_phys) :: rhgrd             = 1.0                !< fer_hires microphysics only; for 3-km domain
     logical              :: spec_adv          = .true.             !< Individual cloud species advected
     integer              :: icloud            = 0                  !< cloud effect to the optical depth in radiation; this also controls the cloud fraction options
                                                                    !<  3: with cloud effect from FA, and use cloud fraction option 3, based on Sundqvist et al. (1989)
@@ -2987,7 +3027,6 @@ module GFS_typedefs
                                                                    !< "1" for MG2 and "2" for MG3
     integer              :: pdfflag           =  4                 !< pdf flag for MG macro physics
     real(kind=kind_phys) :: mg_dcs            = 200.0              !< Morrison-Gettelman microphysics parameters
-    real(kind=kind_phys) :: mg_qcvar          = 1.0
     real(kind=kind_phys) :: mg_ts_auto_ice(2) = (/180.0,180.0/)    !< ice auto conversion time scale
     real(kind=kind_phys) :: mg_rhmini         = 1.01               !< relative humidity threshold parameter for nucleating ice
     real(kind=kind_phys) :: mg_ncnst          = 100.e6             !< constant droplet num concentration (m-3)
@@ -3040,7 +3079,50 @@ module GFS_typedefs
 
     !--- Thompson,GFDL microphysical parameter
     logical              :: lrefres        = .false.            !< flag for radar reflectivity in restart file
-
+    
+    !--- Ferrier-Aligo microphysics and Tiedtke prognostic clouds
+    real(kind=kind_phys) :: rhgrd          = 1.0                !< 1.0 for fer_hires microphysics; for 3-km domain; 0.8 for Tiedtke prognostic clouds
+    
+    !--- M-G microphysics and Tiedtke prognostic clouds
+    real(kind=kind_phys) :: qcvar          = 1.0
+    
+    !--- Tiedtke prognostic cloud scheme parameters
+    !GJF default values of u00 through single_gaussian_pdf come from tiedtke_macro module in AM4
+    !real(kind=kind_phys) :: u00                  = 0.80
+    logical              :: tiedtke_prog_clouds  = .false.
+    logical              :: u00_profile          = .true.
+    real(kind=kind_phpys):: eros_scale           = 1.E-06
+    logical              :: eros_choice          = .false.
+    real(kind=kind_phys) :: eros_scale_c         = 8.E-06
+    real(kind=kind_phys) :: eros_scale_t         = 5.E-05
+    real(kind=kind_phys) :: mc_thresh            = 0.001
+    real(kind=kind_phys) :: diff_thresh          = 0.1
+    real(kind=kidn_phys) :: efact                = 0.0
+    logical              :: add_ahuco            = .true.
+    logical              :: use_qabar            = .true.
+    logical              :: rk_repartition_first = .false.
+    logical              :: do_aero_eros         = .false.
+    real(kind=kind_phys) :: ae_lb                = 0.8
+    real(kind=kind_phys) :: ae_ub                = 1.2
+    real(kind=kind_phys) :: ae_N_lb              = 0.0
+    real(kind=kind_phys) :: ae_N_ub              = 150.0
+    logical              :: include_neg_mc       = .false.
+    logical              :: single_gaussian_pdf  = .false.
+    real(kind=kind_phys) :: qmin                 = 1.0e-10 !from physics_driver.F90 in AM4
+    logical              :: limit_conv_cloud_frac= .false. !from moist_processes.F90 in AM4
+    real(kind=kind_phys) :: dmin                 = 1.0e-7 !from lscloud_driver.F90 in AM4
+    real(kind=kind_phys) :: cfact                = 1.0 !from lscloud_driver.F90 in AM4
+    integer              :: super_ice_opt        = 0 !from lscloud_driver.F90 in AM4
+    !logical              :: do_pdf_clouds        = .false. !GJF: use pdfcld; default value from lscloud_driver.F90
+    integer              :: betaP                = 5 !from lscloud_driver.F90 in AM4
+    real(kind=kind_phys) :: qthalfwidth          = 0.1 !from lscloud_driver.F90 in AM4
+    integer              :: nsublevels           = 1 !from lscloud_driver.F90 in AM4
+    integer              :: kmap                 = 1 !from lscloud_driver.F90 in AM4
+    integer              :: kord                 = 7 !from lscloud_driver.F90 in AM4
+    logical              :: pdf_org              = .true. !from lscloud_driver.F90 in AM4
+    logical              :: do_rk_microphys      = .false. !(check) from lscloud_driver.F90 in AM4
+    logical              :: total_activation     = .false. !(check) from lscloud_driver.F90 in AM4
+    
     !--- land/surface model parameters
     integer              :: lsm            =  1              !< flag for land surface model to use =0  for osu lsm; =1  for noah lsm; =2  for noah mp lsm; =3  for RUC lsm
     integer              :: lsoil          =  4              !< number of soil layers
@@ -3427,7 +3509,7 @@ module GFS_typedefs
                                iccn,                                                        &
                           !--- microphysical parameterizations
                                imp_physics, psautco, prautco, evpco, wminco,                &
-                               fprcp, pdfflag, mg_dcs, mg_qcvar, mg_ts_auto_ice, mg_rhmini, &
+                               fprcp, pdfflag, mg_dcs, qcvar, mg_ts_auto_ice, mg_rhmini,    &
                                effr_in, tf, tcr,                                            &
                                microp_uniform, do_cldice, hetfrz_classnuc,                  &
                                mg_do_graupel, mg_do_hail, mg_nccons, mg_nicons, mg_ngcons,  &
@@ -3483,7 +3565,7 @@ module GFS_typedefs
                                pert_mp,pert_clds,pert_radtend,                              &
                           !--- Rayleigh friction
                                prslrd0, ral_ts,  ldiag_ugwp, do_ugwp, do_tofd,              &
-                          ! --- Ferrier-Aligo
+                          ! --- Ferrier-Aligo, Tiedtke prog clouds
                                spec_adv, rhgrd, icloud,                                     &
                           !--- mass flux deep convection
                                clam_deep, c0s_deep, c1_deep, betal_deep,                    &
@@ -3941,7 +4023,7 @@ module GFS_typedefs
     Model%fprcp            = fprcp
     Model%pdfflag          = pdfflag
     Model%mg_dcs           = mg_dcs
-    Model%mg_qcvar         = mg_qcvar
+    Model%qcvar            = qcvar
     Model%mg_ts_auto_ice   = mg_ts_auto_ice
     Model%mg_rhmini        = mg_rhmini
     Model%mg_alf           = mg_alf
@@ -3989,7 +4071,6 @@ module GFS_typedefs
     Model%sedi_semi        = sedi_semi
     Model%decfl            = decfl
 !--- F-A MP parameters
-    Model%rhgrd            = rhgrd
     Model%spec_adv         = spec_adv
     Model%icloud           = icloud
 
@@ -3997,6 +4078,43 @@ module GFS_typedefs
     Model%lgfdlmprad       = lgfdlmprad
 !--- Thompson,GFDL,NSSL MP parameter
     Model%lrefres          = lrefres
+!   F-A MP, Tiedtke prog cloud parameters
+    Model%rhgrd            = rhgrd
+
+!---- Tiedtke prognostic cloud parameters
+    !Model%u00                   = u00
+    Model%tiedtke_prog_clouds   = tiedtke_prog_clouds
+    Model%u00_profile           = u00_profile
+    Model%eros_scale            = eros_scale
+    Model%eros_choice           = eros_choice
+    Model%eros_scale_c          = eros_scale_c
+    Model%eros_scale_t          = eros_scale_t
+    Model%mc_thresh             = mc_thresh
+    Model%diff_thresh           = diff_thresh
+    Model%efact                 = efact
+    Model%add_ahuco             = add_ahuco
+    Model%use_qabar             = use_qabar
+    Model%rk_repartition_first  = rk_repartition_first
+    Model%do_aero_eros          = do_aero_eros
+    Model%ae_lb                 = ae_lb
+    Model%ae_ub                 = ae_ub
+    Model%ae_N_lb               = ae_N_lb
+    Model%ae_N_ub               = ae_N_ub
+    Model%include_neg_mc        = include_neg_mc
+    Model%single_gaussian_pdf   = single_gaussian_pdf
+    Model%qmin                  = qmin
+    Model%limit_conv_cloud_frac = limit_conv_cloud_frac
+    Model%dmin                  = dmin
+    Model%cfact                 = cfact
+    Model%super_ice_opt         = super_ice_opt
+    Model%betaP                 = betaP
+    Model%qthalfwidth           = qthalfwidth
+    Model%nsublevels            = nsublevels
+    Model%kmap                  = kmap
+    Model%kord                  = kord
+    Model%pdf_org               = pdf_org
+    Model%do_rk_microphys       = do_rk_microphys
+    Model%total_activation      = total_activation
 
 !--- land/surface model parameters
     Model%lsm              = lsm
@@ -5266,7 +5384,7 @@ module GFS_typedefs
       if (Model%me == Model%master)                                                                 &
          print *,' Using Morrison-Gettelman double moment microphysics',                            &
                  ' iaerclm=',         Model%iaerclm,         ' iccn=',          Model%iccn,         &
-                 ' mg_dcs=',          Model%mg_dcs,          ' mg_qcvar=',      Model%mg_qcvar,     &
+                 ' mg_dcs=',          Model%mg_dcs,          ' qcvar=',         Model%qcvar,        &
                  ' mg_ts_auto_ice=',  Model%mg_ts_auto_ice,  ' pdfflag=',       Model%pdfflag,      &
                  ' mg_do_graupel=',   Model%mg_do_graupel,   ' mg_do_hail=',    Model%mg_do_hail,   &
                  ' mg_nccons=',       Model%mg_nccons,       ' mg_nicon=',      Model%mg_nicons,    &
@@ -5758,7 +5876,7 @@ module GFS_typedefs
         print *, ' M-G microphysical parameters'
         print *, ' fprcp             : ', Model%fprcp
         print *, ' mg_dcs            : ', Model%mg_dcs
-        print *, ' mg_qcvar          : ', Model%mg_qcvar
+        print *, ' qcvar             : ', Model%qcvar
         print *, ' mg_ts_auto_ice    : ', Model%mg_ts_auto_ice
         print *, ' mg_alf            : ', Model%mg_alf
         print *, ' mg_qcmin          : ', Model%mg_qcmin

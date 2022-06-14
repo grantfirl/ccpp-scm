@@ -195,6 +195,13 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+[qgrs(:,:,index_of_cloud_area_fraction_in_atmosphere_layer_in_tracer_concentration_array)]
+  standard_name = cloud_area_fraction_in_atmosphere_layer
+  long_name = cloud area fraction in atmosphere layer
+  units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
 [qgrs(:,:,index_of_hail_mixing_ratio_in_tracer_concentration_array)]
   standard_name = hail_mixing_ratio
   long_name = ratio of mass of hail to mass of dry air plus vapor (without condensates)
@@ -3726,7 +3733,7 @@
   dimensions = ()
   type = real
   kind = kind_phys
-[mg_qcvar]
+[qcvar]
   standard_name = relative_variance_of_subgrid_cloud_condensate_distribution
   long_name = cloud water relative variance for MG microphysics
   units = frac
@@ -4086,6 +4093,205 @@
 [lgfdlmprad]
   standard_name = flag_for_GFDL_microphysics_radiation_interaction
   long_name = flag for GFDL microphysics-radiation interaction
+  units = flag
+  dimensions = ()
+  type = logical
+[tiedtke_prog_clouds]
+  standard_name = do_tiedtke_prognostic_clouds
+  long_name = flag for tiedtke prognostic cloud scheme
+  units = flag
+  dimensions = ()
+  type = logical
+[u00_profile]
+  standard_name = do_ecmwf_profile_of_relative_humidity_threshold_for_condensation
+  long_name = flag to activate the ECMWF profile of relative humidity threshold for large scale condensation
+  units = flag
+  dimensions = ()
+  type = logical
+[eros_scale]
+  standard_name = prognostic_cloud_erosion_rate_constant
+  long_name = prognostic cloud erosion rate constant
+  units = s-1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[eros_choice]
+  standard_name = do_enhanced_prognostic_cloud_erosion
+  long_name = flag to activate enhanced prognostic cloud erosion for convection or turbulence
+  units = flag
+  dimensions = ()
+  type = logical
+[eros_scale_c]
+  standard_name = prognostic_cloud_erosion_rate_constant_for_convection
+  long_name = prognostic cloud erosion rate constant for convection
+  units = s-1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[eros_scale_t]
+  standard_name = prognostic_cloud_erosion_rate_constant_for_turbulence
+  long_name = prognostic cloud erosion rate constant for turbulence
+  units = s-1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[mc_thresh]
+  standard_name = convective_mass_flux_threshold_for_enhanced_prognostic_cloud_erosion
+  long_name = convective mass flux threshold for enhanced prognostic cloud erosion
+  units = kg m-2 s-1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[diff_thresh]
+  standard_name = diffusion_threshold_for_enhanced_prognostic_cloud_erosion
+  long_name = diffusion threshold for enhanced prognostic cloud erosion
+  units = m2 s-1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[add_ahuco]
+  standard_name = do_convective_cloud_area_modification_to_relative_humidity_threshold_for_condensation
+  long_name = activate convective cloud area modification to relative humidity threshold for condensation
+  units = flag
+  dimensions = ()
+  type = logical
+[use_qabar]
+  standard_name = do_time_mean_cloud_area
+  long_name = activate use of time-mean cloud area for prognositic cloud processes
+  units = flag
+  dimensions = ()
+  type = logical
+[rk_repartition_first]
+  standard_name = do_prognostic_cloud_liquid_ice_repartition
+  long_name = activate cloud liquid/ice repartition before microphysics
+  units = flag
+  dimensions = ()
+  type = logical
+[do_aero_eros]
+  standard_name = do_enhanced_droplet_based_prognostic_cloud_erosion
+  long_name = do enhanced droplet based prognostic cloud erosion
+  units = flag
+  dimensions = ()
+  type = logical
+[ae_lb]
+  standard_name = prognostic_droplet_based_cloud_erosion_lower_bound_numerator_constant
+  long_name = prognostic droplet based cloud erosion lower bound numerator constant
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[ae_ub]
+  standard_name = prognostic_droplet_based_cloud_erosion_upper_bound_numerator_constant
+  long_name = prognostic droplet based cloud erosion upper bound numerator constant
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[ae_N_lb]
+  standard_name = prognostic_droplet_based_cloud_erosion_lower_bound_denominator_constant
+  long_name = prognostic droplet based cloud erosion lower bound denominator constant
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[ae_N_ub]
+  standard_name = prognostic_droplet_based_cloud_erosion_upper_bound_denominator_constant
+  long_name = prognostic droplet based cloud erosion upper bound denominator constant
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[include_neg_mc]
+  standard_name = do_enhanced_prognostic_cloud_erosion_for_negative_convective_mass_flux
+  long_name = flag to activate enhanced cloud erosion when convective mass flux is negative
+  units = flag
+  dimensions = ()
+  type = logical
+[single_gaussian_pdf]
+  standard_name = do_assume_single_gaussian_pdf_for_prognostic_cloud
+  long_name = flag to activate the assumption of a single Gaussian PDF for prognostic clouds
+  units = flag
+  dimensions = ()
+  type = logical
+[qmin]
+  standard_name = minimum_value_of_cloud_water_species
+  long_name = mimimum value of cloud water species (used in prognostic clouds)
+  units = kg kg-1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[limit_conv_cloud_frac]
+  standard_name = do_limit_prognostic_clouds_by_convective_cloud_area_fraction
+  long_name = flag to activate limiting the prognostic cloud fraction to that NOT already occupied by convective clouds
+  units = flag
+  dimensions = ()
+  type = logical
+[dmin]
+  standard_name = minimum_prognostic_cloud_dissipation
+  long_name = mimumum permissible dissipation for analytic integration of cloud fraction
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[cfact]
+  standard_name = prognostic_cloud_liquid_ice_repartition_tuning_constant
+  long_name = factor in bergeron process calculation when the effect of dust is not considered; values > 1 enhance the conversion to ice
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[super_ice_opt]
+  standard_name = control_for_prognostic_cloud_supersaturation
+  long_name = control for prognostic cloud supersaturation
+  units = 1
+  dimensions = ()
+  type = integer
+[betaP]
+  standard_name = pdf_cloud_beta_distribution_p_parameter
+  long_name = beta distribution p parameter when using PDF clouds
+  units = 1
+  dimensions = ()
+  type = integer
+[qthalfwidth]
+  standard_name = total_water_pdf_half_width
+  long_name = half-width of the qt PDF when using PDF clouds
+  units =  1
+  dimensions = ()
+  type = real
+  kind = kind_phys
+[nsublevels]
+  standard_name = number_of_vertical_sublevels_for_subgrid_cloud_structure
+  long_name = number of vertical sublevels for subgrid cloud structure when using PDF clouds
+  units = count
+  dimensions = ()
+  type = integer
+[kmap]
+  standard_name = piecewise_parabolic_partial_remap_index
+  long_name = piecewise parabolic partial remap index when using PDF clouds with vertical structure
+  units = index
+  dimensions = ()
+  type = integer
+[kord]
+  standard_name = control_for_piecewise_parabolic_method
+  long_name = control for piecewise parabolic method when using PDF clouds with vertical structure
+  units = 1
+  dimensions = ()
+  type = integer
+[pdf_org]
+  standard_name = do_cloud_pdf_definition_from_input_water_fields
+  long_name = flag to activate definition of cloud pdf from input water fields
+  units = flag
+  dimensions = ()
+  type = logical
+[do_rk_microphys]
+  standard_name = do_rotstayn_klein_microphysics
+  long_name = flag to activate rotstayn-klein microphysics
+  units = flag
+  dimensions = ()
+  type = logical
+[total_activation]
+  standard_name = do_total_aerosol_activation
+  long_name = flag to activate total aerosol activation
   units = flag
   dimensions = ()
   type = logical
@@ -4466,6 +4672,12 @@
 [h2o_phys]
   standard_name = flag_for_stratospheric_water_vapor_physics
   long_name = flag for stratospheric water vapor physics
+  units = flag
+  dimensions = ()
+  type = logical
+[pdfcld]
+  standard_name = do_pdf_clouds
+  long_name = flag to activate PDF clouds
   units = flag
   dimensions = ()
   type = logical
