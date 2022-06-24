@@ -111,6 +111,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: dqsdT(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: dqsfc1(:)          => null()  !<
     real (kind=kind_phys), pointer      :: drain(:)           => null()  !<
+    real (kind=kind_phys), pointer      :: drop1(:,:)         => null()  !<
     real (kind=kind_phys), pointer      :: dtdt(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: dtsfc1(:)          => null()  !<
     real (kind=kind_phys), pointer      :: dtzm(:)            => null()  !<
@@ -268,6 +269,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: q_sat_i(:,:)       => null()  !<
     logical                             :: radar_reset                   !<
     real (kind=kind_phys)               :: raddt                         !<
+    real (kind=kind_phys), pointer      :: radturbten(:,:)    => null()
     real (kind=kind_phys), pointer      :: rainmp(:)          => null()  !<
     real (kind=kind_phys), pointer      :: raincd(:)          => null()  !<
     real (kind=kind_phys), pointer      :: raincs(:)          => null()  !<
@@ -301,6 +303,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: snowmp(:)          => null()  !<
     real (kind=kind_phys), pointer      :: snowmt(:)          => null()  !<
     real (kind=kind_phys), pointer      :: sq(:,:)            => null()
+    real (kind=kind_phys), pointer      :: st(:,:)            => null()
     real (kind=kind_phys), pointer      :: stress(:)          => null()  !<
     real (kind=kind_phys), pointer      :: stress_ice(:)      => null()  !<
     real (kind=kind_phys), pointer      :: stress_land(:)     => null()  !<
@@ -926,7 +929,7 @@ contains
        allocate (Interstitial%t2mmp (IM))
        allocate (Interstitial%q2mp  (IM))
     end if
-    if (Model%do_RRTMGP .or. do_tiedtke_prognostic_clouds) then
+    if (Model%do_RRTMGP .or. Model%tiedtke_prog_clouds) then
       allocate (Interstitial%relhum               (IM, Model%levs))
     end if
     ! Tiedtke prognostic clouds
@@ -937,6 +940,7 @@ contains
       allocate (Interstitial%D_eros        (IM,Model%levs))
       allocate (Interstitial%delta_cf      (IM,Model%levs))
       allocate (Interstitial%dqsdT         (IM,Model%levs))
+      allocate (Interstitial%drop1         (IM,Model%levs))
       allocate (Interstitial%hom           (IM,Model%levs))
       allocate (Interstitial%L_cp_dqsdT    (IM,Model%levs))
       allocate (Interstitial%mc_full       (IM,Model%levs))
@@ -947,9 +951,11 @@ contains
       allocate (Interstitial%q_sat         (IM,Model%levs))
       allocate (Interstitial%q_sat_l       (IM,Model%levs))
       allocate (Interstitial%q_sat_i       (IM,Model%levs))
+      allocate (Interstitial%radturbten    (IM,Model%levs))
       allocate (Interstitial%rhc_min       (IM,Model%levs))
       allocate (Interstitial%sa            (IM,Model%levs))
       allocate (Interstitial%sq            (IM,Model%levs))
+      allocate (Interstitial%st            (IM,Model%levs))
       allocate (Interstitial%U_ca          (IM,Model%levs))
       allocate (Interstitial%U01           (IM,Model%levs))
     end if
@@ -1601,6 +1607,7 @@ contains
       Interstitial%D_eros    = clear_val
       Interstitial%delta_cf  = clear_val
       Interstitial%dqsdT     = clear_val
+      Interstitial%drop1     = clear_val
       Interstitial%hom       = clear_val
       Interstitial%L_cp_dqsdT= clear_val
       Interstitial%mc_full   = clear_val
@@ -1611,10 +1618,12 @@ contains
       Interstitial%q_sat     = clear_val
       Interstitial%q_sat_l   = clear_val
       Interstitial%q_sat_i   = clear_val
+      Interstitial%radturbten= clear_val
       Interstitial%relhum    = clear_val
       Interstitial%rhc_min   = clear_val
       Interstitial%sa        = clear_val
       Interstitial%sq        = clear_val
+      Interstitial%st        = clear_val
       Interstitial%U_ca      = clear_val
       Interstitial%U01       = clear_val
     end if

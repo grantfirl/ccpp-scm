@@ -3091,13 +3091,13 @@ module GFS_typedefs
     !real(kind=kind_phys) :: u00                  = 0.80
     logical              :: tiedtke_prog_clouds  = .false.
     logical              :: u00_profile          = .true.
-    real(kind=kind_phpys):: eros_scale           = 1.E-06
+    real(kind=kind_phys) :: eros_scale           = 1.E-06
     logical              :: eros_choice          = .false.
     real(kind=kind_phys) :: eros_scale_c         = 8.E-06
     real(kind=kind_phys) :: eros_scale_t         = 5.E-05
     real(kind=kind_phys) :: mc_thresh            = 0.001
     real(kind=kind_phys) :: diff_thresh          = 0.1
-    real(kind=kidn_phys) :: efact                = 0.0
+    real(kind=kind_phys) :: efact                = 0.0
     logical              :: add_ahuco            = .true.
     logical              :: use_qabar            = .true.
     logical              :: rk_repartition_first = .false.

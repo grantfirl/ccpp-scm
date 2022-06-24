@@ -4149,6 +4149,13 @@
   dimensions = ()
   type = real
   kind = kind_phys
+[efact]
+  standard_name = cloud_erosion_enhancement_factor
+  long_name = factor used in formula to enhance cloud erosion as a function of height
+  units = 1
+  dimensions = ()
+  type = real
+  kind = kind_phys
 [add_ahuco]
   standard_name = do_convective_cloud_area_modification_to_relative_humidity_threshold_for_condensation
   long_name = activate convective cloud area modification to relative humidity threshold for condensation

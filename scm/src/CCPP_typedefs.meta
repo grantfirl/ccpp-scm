@@ -647,6 +647,14 @@
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
+[drop1]
+  standard_name = volume_number_concentration_of_cloud_liquid_water_particles_in_air_of_new_state
+  long_name = number concentration of cloud droplets updated by physics
+  units = cm-3
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [dtdt]
   standard_name = process_split_cumulative_tendency_of_air_temperature
   long_name = air temperature tendency due to model physics
@@ -1778,6 +1786,14 @@
   dimensions = ()
   type = real
   kind = kind_phys
+[radturbten]
+  standard_name = instantaneous_tendency_of_air_temperature_due_to_radiation_and_planetary_boundary_layer
+  long_name = tendency of air temperature due to radiation and planetary boundary layer
+  units = K s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [raincd]
   standard_name = lwe_thickness_of_deep_convective_precipitation_amount
   long_name = deep convective rainfall amount on physics timestep
@@ -2097,6 +2113,14 @@
   standard_name = change_of_specific_humidity_due_to_tiedtke_condensation_adjustment
   long_name = change of specific humidity due to tiedtke condensation adjustment
   units = kg kg-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[st]
+  standard_name = change_of_temperature_due_to_tiedtke_condensation_adjustment
+  long_name = change of temperature due to tiedtke condensation adjustment
+  units = K
   dimensions = (horizontal_loop_extent, vertical_layer_dimension)
   type = real
   kind = kind_phys
