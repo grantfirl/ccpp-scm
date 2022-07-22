@@ -10,7 +10,8 @@ import shutil
 import subprocess
 import sys
 import time
-from suite_info import suite, suite_list
+#from suite_info import suite, suite_list
+import suite_info
 from netCDF4 import Dataset
 # multi-run
 from supported_cases import cases
@@ -835,7 +836,7 @@ def main():
                     'Only cases were specified in {0}, so running all cases with the default suite'.format(file))
                 
                 active_suite = None
-                for s in suite_list:
+                for s in suite_info.suite_list:
                     if suite_name == s._name:
                         active_suite = s
                         break
@@ -862,7 +863,7 @@ def main():
                             'the suite {1} for all specified namelists'.format(file, scm_runs.suites[0]))
                         
                         active_suite = None
-                        for s in suite_list:
+                        for s in suite_info.suite_list:
                             if scm_runs.suites[0] == s._name:
                                 active_suite = s
                                 break
@@ -891,7 +892,7 @@ def main():
                             for j, suite in enumerate(scm_runs.suites,1):
                                 
                                 active_suite = None
-                                for s in suite_list:
+                                for s in suite_info.suite_list:
                                     if suite == s._name:
                                         active_suite = s
                                         break
@@ -924,7 +925,7 @@ def main():
                         for j, suite in enumerate(scm_runs.suites,1):
                             
                             active_suite = None
-                            for s in suite_list:
+                            for s in suite_info.suite_list:
                                 if suite == s._name:
                                     active_suite = s
                                     break                            
@@ -948,7 +949,7 @@ def main():
                     'using the list of namelists'.format(file))
                 
                 active_suite = None
-                for s in suite_list:
+                for s in suite_info.suite_list:
                     if suite_name == s._name:
                         active_suite = s
                         break
@@ -977,11 +978,11 @@ def main():
             # determine the number of suites to run through
             active_suite_list = []
             if SUITE_CHOICE == 'supported':
-                for s in suite_list:
+                for s in suite_info.suite_list:
                     if s._supported:
                         active_suite_list.append(s)        
             else:
-                active_suite_list = suite_list
+                active_suite_list = suite_info.suite_list
             
             for i, case in enumerate(cases):
                 for j, active_suite in enumerate(active_suite_list,1):
@@ -1003,7 +1004,7 @@ def main():
     else:
         # Single experiment
         active_suite = None
-        for s in suite_list:
+        for s in suite_info.suite_list:
             if suite_name == s._name:
                 active_suite = s
                 break
@@ -1011,9 +1012,9 @@ def main():
         if (active_suite is None):
             if (namelist and tracers):
                 if timestep:
-                    active_suite = suite(suite_name, tracers, namelist, timestep, -1, False)
+                    active_suite = suite_info.suite(suite_name, tracers, namelist, timestep, -1, False)
                 else:
-                    active_sutie = suite(suite_name, tracers, namelist, -1, -1, False)
+                    active_suite = suite_info.suite(suite_name, tracers, namelist, -1, -1, False)
             else:
                 message = 'The given suite ({0}), does not have defaults set in suite_info.py and either the tracers file or physics namelist file (or both) were not provided.'.format(suite_name)
                 logging.critical(message)

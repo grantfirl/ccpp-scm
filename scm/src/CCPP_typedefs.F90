@@ -258,6 +258,8 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: qlcn(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: qlyr(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: ql_upd(:,:)        => null()
+    real (kind=kind_phys), pointer      :: qn_upd(:,:)        => null()
+    real (kind=kind_phys), pointer      :: qni_upd(:,:)       => null()
     real (kind=kind_phys), pointer      :: qrn(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: qsnw(:,:)          => null()  !<
     real (kind=kind_phys), pointer      :: qss_ice(:)         => null()  !<
@@ -293,6 +295,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: sbsno(:)           => null()  !<
     type (cmpfsw_type),    pointer      :: scmpsw(:)          => null()  !<
     real (kind=kind_phys), pointer      :: sfcalb(:,:)        => null()  !<
+    real (kind=kind_phys), pointer      :: si(:,:)            => null()
     real (kind=kind_phys), pointer      :: sigma(:)           => null()  !<
     real (kind=kind_phys), pointer      :: sigmaf(:)          => null()  !<
     real (kind=kind_phys), pointer      :: sigmafrac(:,:)     => null()  !<
@@ -302,6 +305,9 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: snohf(:)           => null()  !<
     real (kind=kind_phys), pointer      :: snowmp(:)          => null()  !<
     real (kind=kind_phys), pointer      :: snowmt(:)          => null()  !<
+    real (kind=kind_phys), pointer      :: sl(:,:)            => null()
+    real (kind=kind_phys), pointer      :: sn(:,:)            => null()
+    real (kind=kind_phys), pointer      :: sni(:,:)           => null()
     real (kind=kind_phys), pointer      :: sq(:,:)            => null()
     real (kind=kind_phys), pointer      :: st(:,:)            => null()
     real (kind=kind_phys), pointer      :: stress(:)          => null()  !<
@@ -945,6 +951,8 @@ contains
       allocate (Interstitial%L_cp_dqsdT    (IM,Model%levs))
       allocate (Interstitial%mc_full       (IM,Model%levs))
       allocate (Interstitial%ql_upd        (IM,Model%levs))
+      allocate (Interstitial%qn_upd        (IM,Model%levs))
+      allocate (Interstitial%qni_upd       (IM,Model%levs))
       allocate (Interstitial%qi_upd        (IM,Model%levs))
       allocate (Interstitial%qa_upd        (IM,Model%levs))
       allocate (Interstitial%qvg           (IM,Model%levs))
@@ -954,6 +962,10 @@ contains
       allocate (Interstitial%radturbten    (IM,Model%levs))
       allocate (Interstitial%rhc_min       (IM,Model%levs))
       allocate (Interstitial%sa            (IM,Model%levs))
+      allocate (Interstitial%sl            (IM,Model%levs))
+      allocate (Interstitial%si            (IM,Model%levs))
+      allocate (Interstitial%sn            (IM,Model%levs))
+      allocate (Interstitial%sni           (IM,Model%levs))
       allocate (Interstitial%sq            (IM,Model%levs))
       allocate (Interstitial%st            (IM,Model%levs))
       allocate (Interstitial%U_ca          (IM,Model%levs))
@@ -1614,6 +1626,8 @@ contains
       Interstitial%qa_upd    = clear_val
       Interstitial%qi_upd    = clear_val
       Interstitial%ql_upd    = clear_val
+      Interstitial%qn_upd    = clear_val
+      Interstitial%qni_upd   = clear_val
       Interstitial%qvg       = clear_val
       Interstitial%q_sat     = clear_val
       Interstitial%q_sat_l   = clear_val
@@ -1622,6 +1636,10 @@ contains
       Interstitial%relhum    = clear_val
       Interstitial%rhc_min   = clear_val
       Interstitial%sa        = clear_val
+      Interstitial%sl        = clear_val
+      Interstitial%si        = clear_val
+      Interstitial%sn        = clear_val
+      Interstitial%sni       = clear_val
       Interstitial%sq        = clear_val
       Interstitial%st        = clear_val
       Interstitial%U_ca      = clear_val

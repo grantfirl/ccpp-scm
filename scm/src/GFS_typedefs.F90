@@ -931,7 +931,8 @@ module GFS_typedefs
     real(kind=kind_phys) :: dtcloud, inv_dtcloud
     logical              :: do_rk_microphys
     logical              :: total_activation
-    
+    logical              :: do_liq_num
+    logical              :: do_ice_num    
     
     !--- land/surface model parameters
     integer              :: lsm             !< flag for land surface model lsm=1 for noah lsm
@@ -4552,6 +4553,10 @@ module GFS_typedefs
     Model%ntia             = get_tracer_index(Model%tracer_names, 'ice_aero',   Model%me, Model%master, Model%debug)
     Model%ntsmoke          = get_tracer_index(Model%tracer_names, 'smoke',      Model%me, Model%master, Model%debug)
     Model%ntdust           = get_tracer_index(Model%tracer_names, 'dust',       Model%me, Model%master, Model%debug)
+
+!--- needed for Tiedtke prognostic clouds scheme
+    Model%do_liq_num = Model%ntlnc > 0
+    Model%do_ice_num = Model%ntinc > 0
 
 !--- initialize parameters for atmospheric chemistry tracers
     call Model%init_chemistry(tracer_types)

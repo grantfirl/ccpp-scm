@@ -2046,6 +2046,14 @@
   dimensions = (horizontal_loop_extent)
   type = real
   kind = kind_phys
+[si]
+  standard_name = change_of_cloud_ice_mixing_ratio_due_to_tiedtke_condensation_adjustment
+  long_name = change of cloud ice mixing ratio due to tiedtke condensation adjustment
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [sigma]
   standard_name = slope_of_subgrid_orography
   long_name = slope of subgrid height_above_mean_sea_level
@@ -2080,6 +2088,30 @@
   units = flag
   dimensions = ()
   type = logical
+[sl]
+  standard_name = change_of_cloud_liquid_water_mixing_ratio_due_to_tiedtke_condensation_adjustment
+  long_name = change of cloud liquid water mixing ratio due to tiedtke condensation adjustment
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[sn]
+  standard_name = change_of_mass_number_concentration_of_cloud_liquid_water_particles_in_air_due_to_tiedtke_condensation_adjustment
+  long_name = change of mass number concentration of cloud liquid water particles in air due to tiedtke condensation adjustment
+  units = kg-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[sni]
+  standard_name = change_of_mass_number_concentration_of_cloud_ice_water_crystals_in_air_due_to_tiedtke_condensation_adjustment
+  long_name = change of mass number concentration of cloud ice water crystals in air due to tiedtke condensation adjustment
+  units = kg-1
+  dimensions = (horizontal_loop_extent, vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [snowc]
   standard_name = surface_snow_area_fraction
   long_name = surface snow area fraction
@@ -2570,6 +2602,22 @@
   standard_name = cloud_area_fraction_in_atmosphere_layer_of_new_state_after_realizability
   long_name = cloud fraction updated by physics after realizability check
   units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[qn_upd]
+  standard_name = mass_number_concentration_of_cloud_liquid_water_particles_in_air_of_new_state_after_realizability
+  long_name = number concentration of cloud droplets updated by physics after realizability check
+  units = kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[qni_upd]
+  standard_name = mass_number_concentration_of_cloud_ice_water_crystals_in_air_of_new_state_after_realizability
+  long_name = number concentration of ice updated by physics after realizability check
+  units = kg-1
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys

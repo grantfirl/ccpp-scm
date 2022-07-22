@@ -2,6 +2,7 @@
 
 class suite(object):
   
+    global DEFAULT_MAX_TIMESTEP
     DEFAULT_MAX_TIMESTEP = 1800.0
   
     def __init__(self, name, tracers, namelist, timestep, max_timestep, supported):
