@@ -162,6 +162,7 @@ v = []
 qc = []
 ql = []
 qi = []
+qa = []
 
 qv_force_tend = []
 T_force_tend = []
@@ -386,6 +387,9 @@ for i in range(len(scm_datasets)):
     
     qi.append(nc_fid.variables['qi'][:])
     inst_time_group.append('qi')
+    
+    qa.append(nc_fid.variables['qa'][:])
+    inst_time_group.append('qa')
     
     qv_force_tend.append(nc_fid.variables['qv_force_tend'][:])
     inst_time_group.append('qv_force_tend')

@@ -101,7 +101,7 @@ subroutine output_init(scm_state, physics)
   call NetCDF_def_var(ncid, 'time_rad', NF90_FLOAT, "model elapsed time for either LW or SW radiation variables", "s", time_rad_var_id, (/ time_rad_id /))
 
   !> - Define the state variables
-  CALL output_init_state(ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_dim_i_id)
+  CALL output_init_state(ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_dim_i_id, physics)
   !> - Define the forcing variables
   CALL output_init_forcing(ncid, time_inst_id, hor_dim_id, vert_dim_id)
   
@@ -165,9 +165,11 @@ subroutine output_init(scm_state, physics)
   !> @}
 end subroutine output_init
 
-subroutine output_init_state(ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_dim_i_id)
+subroutine output_init_state(ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_dim_i_id, physics)
+  use scm_type_defs, only: scm_state_type, physics_type
   use NetCDF_def, only : NetCDF_def_var
   
+  type(physics_type), intent(in) :: physics
   integer, intent(in) :: ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_dim_i_id
   
   integer :: dummy_id
@@ -187,6 +189,9 @@ subroutine output_init_state(ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_d
   call NetCDF_def_var(ncid, 'ql', NF90_FLOAT, "suspended resolved liquid cloud water on model layer centers",        "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
   call NetCDF_def_var(ncid, 'qi', NF90_FLOAT, "suspended resolved ice cloud water on model layer centers",           "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
   call NetCDF_def_var(ncid, 'qc', NF90_FLOAT, "suspended (resolved + SGS) total cloud water on model layer centers", "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
+  if (physics%Model%tiedtke_prog_clouds) then
+    call NetCDF_def_var(ncid, 'qa', NF90_FLOAT, "prognostic cloud fraction on model layer centers", "fraction", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
+  end if
   
 end subroutine output_init_state
 
@@ -317,7 +322,7 @@ subroutine output_init_diag(ncid, time_inst_id, time_diag_id, time_rad_id, hor_d
   call NetCDF_def_var(ncid, 'dT_dt_pbl',       NF90_FLOAT, "temperature tendency due to PBL scheme",                          "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dT_dt_deepconv',  NF90_FLOAT, "temperature tendency due to deep convection scheme",              "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dT_dt_shalconv',  NF90_FLOAT, "temperature tendency due to shallow convection scheme",           "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
-  call NetCDF_def_var(ncid, 'dT_dt_micro',     NF90_FLOAT, "temperature tendency due to deep microphysics scheme",            "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+  call NetCDF_def_var(ncid, 'dT_dt_micro',     NF90_FLOAT, "temperature tendency due to microphysics scheme",                 "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dT_dt_ogwd',      NF90_FLOAT, "temperature tendency due to orographic gravity wave drag scheme", "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dT_dt_rayleigh',  NF90_FLOAT, "temperature tendency due to rayleigh damping scheme",             "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dT_dt_cgwd',      NF90_FLOAT, "temperature tendency due to convective gravity wave drag scheme", "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
@@ -352,6 +357,19 @@ subroutine output_init_diag(ncid, time_inst_id, time_diag_id, time_rad_id, hor_d
   call NetCDF_def_var(ncid, 'dv_dt_shalconv',  NF90_FLOAT, "y-wind tendency due to shallow convection scheme",                "m s-2",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dv_dt_phys',      NF90_FLOAT, "y-wind tendency due to all physics schemes",                      "m s-2",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
   call NetCDF_def_var(ncid, 'dv_dt_nonphys',   NF90_FLOAT, "y-wind tendency due to all processes other than physics",         "m s-2",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+  if (physics%Model%tiedtke_prog_clouds) then
+    call NetCDF_def_var(ncid, 'dT_dt_macro',     NF90_FLOAT, "temperature tendency due to cloud macrophysics scheme",                 "K s-1",       dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    call NetCDF_def_var(ncid, 'dq_dt_macro',     NF90_FLOAT, "moisture tendency due to cloud macrophysics scheme",                    "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    call NetCDF_def_var(ncid, 'dql_dt_macro',    NF90_FLOAT, "cloud liquid water tendency due to cloud macrophysics scheme",          "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    call NetCDF_def_var(ncid, 'dqi_dt_macro',    NF90_FLOAT, "cloud ice water tendency due to cloud macrophysics scheme",             "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    call NetCDF_def_var(ncid, 'dqa_dt_macro',    NF90_FLOAT, "cloud area fraction tendency due to cloud macrophysics scheme",         "s-1",         dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    if (physics%Model%do_liq_num) then
+      call NetCDF_def_var(ncid, 'dqln_dt_macro', NF90_FLOAT, "change of cloud liquid number concentration due to cloud macrophysics scheme", "kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    end if
+    if (physics%Model%do_ice_num) then
+      call NetCDF_def_var(ncid, 'dqin_dt_macro', NF90_FLOAT, "change of cloud ice number concentration due to cloud macrophysics scheme", "kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_diag_id /))
+    end if
+  end if
   
   call NetCDF_def_var(ncid, 'sfc_dwn_sw',      NF90_FLOAT, "surface downwelling shortwave flux (valid all timesteps)",                   "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
   call NetCDF_def_var(ncid, 'sfc_up_sw',       NF90_FLOAT, "surface upwelling shortwave flux (valid all timesteps)",                     "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
@@ -503,6 +521,9 @@ subroutine output_append_state(ncid, scm_state, physics)
     call NetCDF_put_var(ncid, "qc",    scm_state%state_tracer(:,:,scm_state%cloud_water_index,1) + &
                                        scm_state%state_tracer(:,:,scm_state%cloud_ice_index,1),    &
                                        scm_state%itt_out)
+  endif
+  if (physics%Model%tiedtke_prog_clouds) then
+    call NetCDF_put_var(ncid, "qa",    scm_state%state_tracer(:,:,scm_state%cloud_amount_index,1), scm_state%itt_out)
   endif
   
 end subroutine output_append_state
@@ -769,6 +790,20 @@ subroutine output_append_diag_avg(ncid, scm_state, physics)
     call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_scnv),              "dv_dt_shalconv", scm_state%itt_diag, inverse_n_diag*inverse_dt)
     call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_physics),           "dv_dt_phys",     scm_state%itt_diag, inverse_n_diag*inverse_dt)
     call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_non_physics),       "dv_dt_nonphys",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
+    
+    if (physics%Model%tiedtke_prog_clouds) then
+      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(physics%Model%index_of_temperature,physics%Model%index_of_process_macro),      "dT_dt_macro",    scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntqv,physics%Model%index_of_process_macro),                  "dq_dt_macro",    scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntcw,physics%Model%index_of_process_macro),                  "dql_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntiw,physics%Model%index_of_process_macro),                  "dqi_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntclamt,physics%Model%index_of_process_macro),               "dqa_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      if (physics%Model%do_liq_num) then
+        call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntlnc,physics%Model%index_of_process_macro),               "dqln_dt_macro",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      end if
+      if (physics%Model%do_ice_num) then
+        call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntinc,physics%Model%index_of_process_macro),               "dqin_dt_macro",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      end if
+    end if
     
     call NetCDF_put_var(ncid, "tprcp_accum",          physics%Diag%totprcpb(:), scm_state%itt_diag, inverse_n_diag)
     call NetCDF_put_var(ncid, "ice_accum",            physics%Diag%toticeb(:),  scm_state%itt_diag, inverse_n_diag)

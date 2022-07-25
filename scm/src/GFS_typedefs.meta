@@ -5484,6 +5484,12 @@
   units = index
   dimensions = ()
   type = integer
+[index_of_process_macro]
+  standard_name = index_of_macrophysics_process_in_cumulative_change_index
+  long_name = index of macrophysics process in second dimension of array cumulative change index
+  units = index
+  dimensions = ()
+  type = integer
 [index_of_process_prod_loss]
   standard_name = index_of_production_and_loss_process_in_cumulative_change_index
   long_name = index of production and loss effect in photochemistry process in second dimension of array cumulative change index

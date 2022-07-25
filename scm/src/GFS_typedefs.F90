@@ -1293,6 +1293,7 @@ module GFS_typedefs
     integer :: index_of_process_dcnv             !< tracer changes caused by deep convection scheme
     integer :: index_of_process_scnv             !< tracer changes caused by shallow convection scheme
     integer :: index_of_process_mp               !< tracer changes caused by microphysics scheme
+    integer :: index_of_process_macro            !< tracer changes caused by macrophysics scheme
     integer :: index_of_process_prod_loss        !< tracer changes caused by ozone production and loss
     integer :: index_of_process_ozmix            !< tracer changes caused by ozone mixing ratio
     integer :: index_of_process_temp             !< tracer changes caused by temperature
@@ -3090,7 +3091,7 @@ module GFS_typedefs
     !--- Tiedtke prognostic cloud scheme parameters
     !GJF default values of u00 through single_gaussian_pdf come from tiedtke_macro module in AM4
     !real(kind=kind_phys) :: u00                  = 0.80
-    logical              :: tiedtke_prog_clouds  = .false.
+    logical              :: tiedtke_prog_clouds  = .true.
     logical              :: u00_profile          = .true.
     real(kind=kind_phys) :: eros_scale           = 1.E-06
     logical              :: eros_choice          = .false.
@@ -3623,7 +3624,7 @@ module GFS_typedefs
     integer :: ncnvcld3d = 0       !< number of convective 3d clouds fields
 
     integer :: itrac, ipat, ichem
-    logical :: have_pbl, have_dcnv, have_scnv, have_mp, have_oz_phys, have_samf, have_pbl_edmf, have_cnvtrans, have_rdamp
+    logical :: have_pbl, have_dcnv, have_scnv, have_mp, have_macro, have_oz_phys, have_samf, have_pbl_edmf, have_cnvtrans, have_rdamp
     character(len=20) :: namestr
     character(len=44) :: descstr
 
@@ -4583,6 +4584,7 @@ module GFS_typedefs
     Model%index_of_process_nonorographic_gwd = 13
     Model%index_of_process_conv_trans = 14
     Model%index_of_process_dfi_radar = 15
+    Model%index_of_process_macro = 16
 
     ! Number of processes to sum (last index of prior set)
     Model%nprocess_summed = Model%index_of_process_dfi_radar
@@ -4621,6 +4623,7 @@ module GFS_typedefs
        have_dcnv = Model%imfdeepcnv>0 !Model%ras .or. Model%cscnv .or. Model%do_deep .or. Model%hwrf_samfdeep
        have_scnv = Model%imfshalcnv>0 !Model%shal_cnv
        have_mp = Model%imp_physics>0
+       have_macro = Model%tiedtke_prog_clouds
        have_oz_phys = Model%oz_phys .or. Model%oz_phys_2015
 
        ! Rayleigh damping flag must match logic in rayleigh_damp.f
@@ -4708,6 +4711,7 @@ module GFS_typedefs
         call label_dtend_cause(Model,Model%index_of_process_pbl,'pbl','tendency due to PBL')
         call label_dtend_cause(Model,Model%index_of_process_dcnv,'deepcnv','tendency due to deep convection')
         call label_dtend_cause(Model,Model%index_of_process_scnv,'shalcnv','tendency due to shallow convection')
+        call label_dtend_cause(Model,Model%index_of_process_macro,'macro','tendency due to macrophysics')
         call label_dtend_cause(Model,Model%index_of_process_mp,'mp','tendency due to microphysics')
         call label_dtend_cause(Model,Model%index_of_process_prod_loss,'prodloss','tendency due to production and loss rate')
         call label_dtend_cause(Model,Model%index_of_process_ozmix,'o3mix','tendency due to ozone mixing ratio')
@@ -4731,6 +4735,7 @@ module GFS_typedefs
        call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_dcnv,have_dcnv)
        call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_scnv,have_scnv)
        call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_mp,have_mp)
+       call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_macro,have_macro)
        call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_dfi_radar,have_mp .and. Model%num_dfi_radar>0)
        call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_orographic_gwd)
        call fill_dtidx(Model,dtend_select,Model%index_of_temperature,Model%index_of_process_rayleigh_damping,have_rdamp)
@@ -4815,6 +4820,19 @@ module GFS_typedefs
                call fill_dtidx(Model,dtend_select,100+itrac,Model%index_of_process_mp,have_mp)
              endif
           enddo
+          
+          if (Model%tiedtke_prog_clouds) then
+            call fill_dtidx(Model,dtend_select,100+Model%ntqv,Model%index_of_process_macro,have_macro)
+            call fill_dtidx(Model,dtend_select,100+Model%ntcw,Model%index_of_process_macro,have_macro)
+            call fill_dtidx(Model,dtend_select,100+Model%ntiw,Model%index_of_process_macro,have_macro)
+            call fill_dtidx(Model,dtend_select,100+Model%ntclamt,Model%index_of_process_macro,have_macro)
+            if (Model%do_liq_num) then
+              call fill_dtidx(Model,dtend_select,100+Model%ntlnc,Model%index_of_process_macro,have_macro)
+            end if
+            if (Model%do_ice_num) then
+              call fill_dtidx(Model,dtend_select,100+Model%ntinc,Model%index_of_process_macro,have_macro)
+            end if
+          end if
        endif
     end if
 
