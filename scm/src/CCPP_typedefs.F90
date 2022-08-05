@@ -105,7 +105,6 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: del(:,:)           => null()  !<
     real (kind=kind_phys), pointer      :: del_gz(:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: delr(:,:)          => null()  !<
-    real (kind=kind_phys), pointer      :: delta_cf(:,:)      => null()  !<
     real (kind=kind_phys), pointer      :: dlength(:)         => null()  !<
     real (kind=kind_phys), pointer      :: dqdt(:,:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: dqsdT(:,:)         => null()  !<
@@ -944,7 +943,6 @@ contains
       allocate (Interstitial%da_ls         (IM,Model%levs))
       allocate (Interstitial%dcond_ls      (IM,Model%levs))
       allocate (Interstitial%D_eros        (IM,Model%levs))
-      allocate (Interstitial%delta_cf      (IM,Model%levs))
       allocate (Interstitial%dqsdT         (IM,Model%levs))
       allocate (Interstitial%drop1         (IM,Model%levs))
       allocate (Interstitial%hom           (IM,Model%levs))
@@ -1617,7 +1615,6 @@ contains
       Interstitial%da_ls     = clear_val
       Interstitial%dcond_ls  = clear_val
       Interstitial%D_eros    = clear_val
-      Interstitial%delta_cf  = clear_val
       Interstitial%dqsdT     = clear_val
       Interstitial%drop1     = clear_val
       Interstitial%hom       = clear_val

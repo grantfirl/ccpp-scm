@@ -508,14 +508,6 @@
   dimensions = (horizontal_loop_extent,adjusted_vertical_layer_dimension_for_radiation)
   type = real
   kind = kind_phys
-[delta_cf]
-  standard_name = change_in_saturated_area_fraction_due
-  long_name = change in saturated volume fraction
-  units = frac
-  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
-  type = real
-  kind = kind_phys
-  active = (do_tiedtke_prognostic_clouds)
 [dlength]
   standard_name = characteristic_grid_length_scale
   long_name = representative horizontal length scale of grid box
