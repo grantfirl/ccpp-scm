@@ -3246,6 +3246,12 @@
   units = flag
   dimensions = ()
   type = integer
+[icond]
+  standard_name = flag_for_cloud_condensate_vertical_overlap
+  long_name = flag for cloud condensate vertical overlap and spatial inhomogeneity
+  units = flag
+  dimensions = ()
+  type = integer
 [ictm]
   standard_name = flag_for_initial_time_date_control
   long_name = flag for initial conditions and forcing
@@ -3638,6 +3644,12 @@
   units = km
   dimensions = ()
   type = real
+[icond_condovron]
+  standard_name = flag_for_oreopoulos_cloud_condensate_overlap_method
+  long_name = choice of cloud condensate overlap method (oreopoulos)
+  units = flag
+  dimensions = ()
+  type = integer
 [psautco]
   standard_name = autoconversion_to_snow_coefficient
   long_name = auto conversion coeff from ice to snow
