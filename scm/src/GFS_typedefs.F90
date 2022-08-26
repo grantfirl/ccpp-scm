@@ -745,9 +745,8 @@ module GFS_typedefs
                                             !< =1 => Use spatially varying decorrelation length (Hogan et al. 2010)
                                             !< =2 => Use spatially and temporally varyint decorrelation length (Oreopoulos et al. 2012)
     real(kind_phys)      :: dcorr_con       !< Decorrelation length constant (km) (if idcor = 0)
-    integer              :: icond           !< Cloud condensate overlap spatial inhomogeneity
-                                            !< =0 => Do not use cloud condensate vertical overlap and spatial inhomogeneity
-                                            !< =1 => Use cloud condensate vertical overlap and spatial inhomogeneity (Oreopoulos et al. 2012)
+    logical              :: icond           !< Use cloud condensate vertical overlap and spatial inhomogeneity (Oreopoulos et al. 2012)
+                                            !< valid for when iovr=4 or iovr=5
     logical              :: crick_proof     !< CRICK-Proof cloud water
     logical              :: ccnorm          !< Cloud condensate normalized by cloud cover
     logical              :: norad_precip    !< radiation precip flag for Ferrier/Moorthi
@@ -815,7 +814,6 @@ module GFS_typedefs
     integer :: idcor_con        = 0 !< choice for decorrelation-length: Use constant value
     integer :: idcor_hogan      = 1 !< choice for decorrelation-length: (https://rmets.onlinelibrary.wiley.com/doi/full/10.1002/qj.647)
     integer :: idcor_oreopoulos = 2 !< choice for decorrelation-length: (10.5194/acp-12-9097-2012)
-    integer :: icond_condovron  = 1 !< choice for cloud condensate vertical overlap: (10.5194/acp-12-9097-2012)
     integer              :: imp_physics_nssl      = 17       !< choice of NSSL microphysics scheme with background CCN
     integer              :: imp_physics_nssl2mccn = 18       !< choice of NSSL microphysics scheme with predicted CCN (compatibility)
     !--- Z-C microphysical parameters
@@ -2956,9 +2954,7 @@ module GFS_typedefs
                                                              !< =1 => Use spatially varying decorrelation length (Hogan et al. 2010)
                                                              !< =2 => Use spatially and temporally varyint decorrelation length (Oreopoulos et al. 2012)
     real(kind_phys)      :: dcorr_con         = 2.5          !< Decorrelation length constant (km) (if idcor = 0)
-    integer              :: icond = 0                        !< Cloud condensate overlap and spatial inhomogeneity
-                                                             !< =0 => Do not use cloud condensate vertical overlap and spatial inhomogeneity
-                                                             !< =1 => Use cloud condensate vertical overlap and spatial inhomogeneity (Oreopoulos et al. 2012)
+    logical              :: icond             = .false.      !< Use cloud condensate vertical overlap and spatial inhomogeneity (Oreopoulos et al. 2012)
     logical              :: crick_proof       = .false.      !< CRICK-Proof cloud water
     logical              :: ccnorm            = .false.      !< Cloud condensate normalized by cloud cover
     logical              :: norad_precip      = .false.      !< radiation precip flag for Ferrier/Moorthi
@@ -5151,6 +5147,14 @@ module GFS_typedefs
         print *,' no sub-grid cloud for Longwave ISUBC_LW=',Model%isubc_lw
       else
         print *,' sub-grid cloud for Longwave ISUBC_LW=',Model%isubc_lw
+      endif
+      if (Model%icond) then
+        if (Model%iovr /= Model%iovr_exp .or. Model%iovr /= Model%iovr_exprand) then
+          print *,' The icond flag for cloud condensate vertical overlap and spatial heterogeneity is only valid when',&
+                  ' the chosen cloud overlap method (iovr) is exponential or exponential random:',&
+                  ' iovr = ', Model%iovr_exp,&
+                  ' or iovr = ',Model%iovr_exprand
+        end if
       endif
     endif
 
