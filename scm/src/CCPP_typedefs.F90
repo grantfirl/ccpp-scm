@@ -690,7 +690,6 @@ contains
     allocate (Interstitial%tsurf_ice       (IM))
     allocate (Interstitial%tsurf_land      (IM))
     allocate (Interstitial%tsurf_water     (IM))
-    allocate (Interstitial%ud_mf           (IM,Model%levs))
     allocate (Interstitial%uustar_ice      (IM))
     allocate (Interstitial%uustar_land     (IM))
     allocate (Interstitial%uustar_water    (IM))
@@ -1507,7 +1506,6 @@ contains
     Interstitial%tsurf_ice       = Model%huge
     Interstitial%tsurf_land      = Model%huge
     Interstitial%tsurf_water     = Model%huge
-    Interstitial%ud_mf           = clear_val
     Interstitial%uustar_ice      = Model%huge
     Interstitial%uustar_land     = Model%huge
     Interstitial%uustar_water    = Model%huge
