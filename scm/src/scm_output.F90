@@ -361,7 +361,20 @@ subroutine output_init_diag(ncid, time_inst_id, time_diag_id, time_rad_id, hor_d
   call output_init_tendency(ncid, 'dv_dt_shalconv',  "y-wind tendency due to shallow convection scheme",        "m s-2", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_scnv))
   call output_init_tendency(ncid, 'dv_dt_phys',      "y-wind tendency due to all physics schemes",              "m s-2", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_physics))
   call output_init_tendency(ncid, 'dv_dt_nonphys',   "y-wind tendency due to all processes other than physics", "m s-2", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_non_physics))
-
+  if (physics%Model%tiedtke_prog_clouds) then
+    call output_init_tendency(ncid, 'dT_dt_macro',     "temperature tendency due to cloud macrophysics scheme",        "K s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(physics%Model%index_of_temperature,physics%Model%index_of_process_macro))
+    call output_init_tendency(ncid, 'dq_dt_macro',     "moisture tendency due to cloud macrophysics scheme",           "kg kg-1 s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(100+physics%Model%ntqv,physics%Model%index_of_process_macro))
+    call output_init_tendency(ncid, 'dql_dt_macro',    "cloud liquid water tendency due to cloud macrophysics scheme", "kg kg-1 s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(100+physics%Model%ntcw,physics%Model%index_of_process_macro))
+    call output_init_tendency(ncid, 'dqi_dt_macro',    "cloud ice water tendency due to cloud macrophysics scheme",    "kg kg-1 s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(100+physics%Model%ntiw,physics%Model%index_of_process_macro))
+    call output_init_tendency(ncid, 'dqa_dt_macro',    "cloud fraction tendency due to cloud macrophysics scheme",     "frac s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(100+physics%Model%ntclamt,physics%Model%index_of_process_macro))
+    if (physics%Model%do_liq_num) then
+      call output_init_tendency(ncid, 'dqln_dt_macro',   "cloud liquid water droplet number concentration tendency due to cloud macrophysics scheme", "# kg-1 s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(100+physics%Model%ntlnc,physics%Model%index_of_process_macro))
+    end if
+    if (physics%Model%do_ice_num) then
+      call output_init_tendency(ncid, 'dqin_dt_macro',   "cloud ice particle concentration tendency due to cloud macrophysics scheme", "# kg-1 s-1", hor_dim_id, vert_dim_id, time_diag_id, physics%Model%dtidx(100+physics%Model%ntinc,physics%Model%index_of_process_macro))
+    end if
+  end if
+  
   call NetCDF_def_var(ncid, 'sfc_dwn_sw',      NF90_FLOAT, "surface downwelling shortwave flux (valid all timesteps)",                   "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
   call NetCDF_def_var(ncid, 'sfc_up_sw',       NF90_FLOAT, "surface upwelling shortwave flux (valid all timesteps)",                     "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
   call NetCDF_def_var(ncid, 'sfc_net_sw',      NF90_FLOAT, "surface net shortwave flux (downwelling - upwelling) (valid all timesteps)", "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
@@ -444,10 +457,12 @@ subroutine output_append(scm_state, physics, force)
     CALL CHECK(NF90_PUT_VAR(NCID=ncid,VARID=var_id,VALUES=scm_state%model_time,START=(/ scm_state%itt_out /)))
     
     call output_append_state(ncid, scm_state, physics)
+    write(*,*) 'output_append_state'
     call output_append_forcing(ncid, scm_state)
     call output_append_sfcprop(ncid, scm_state, physics)
     call output_append_interstitial_inst(ncid, scm_state, physics)
     call output_append_diag_inst(ncid, scm_state, physics)
+    write(*,*) 'output_diag_inst'
   end if
   
   if(physics%Model%lslwr .or. physics%Model%lsswr) then
@@ -469,12 +484,14 @@ subroutine output_append(scm_state, physics, force)
     call output_append_diag_rad(ncid, scm_state, physics)
   end if
   
+  write(*,*) 'before output_append_diag_avg'
   if(mod(scm_state%itt,physics%Model%nszero) == 0) then
     scm_state%itt_diag = scm_state%itt_diag + 1
     CALL CHECK(NF90_INQ_VARID(NCID=ncid,NAME="time_diag",VARID=var_id))
     CALL CHECK(NF90_PUT_VAR(NCID=ncid,VARID=var_id,VALUES=scm_state%model_time,START=(/ scm_state%itt_diag /)))
     call output_append_diag_avg(ncid, scm_state, physics)
   end if
+  write(*,*) 'after output_append_diag_avg'
   
   !> - Close the file.
   CALL CHECK(NF90_CLOSE(ncid))
@@ -783,16 +800,16 @@ subroutine output_append_diag_avg(ncid, scm_state, physics)
     call output_append_tendency(ncid, physics, physics%Model%dtidx(physics%Model%index_of_y_wind,physics%Model%index_of_process_non_physics),       "dv_dt_nonphys",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
     
     if (physics%Model%tiedtke_prog_clouds) then
-      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(physics%Model%index_of_temperature,physics%Model%index_of_process_macro),      "dT_dt_macro",    scm_state%itt_diag, inverse_n_diag*inverse_dt)
-      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntqv,physics%Model%index_of_process_macro),                  "dq_dt_macro",    scm_state%itt_diag, inverse_n_diag*inverse_dt)
-      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntcw,physics%Model%index_of_process_macro),                  "dql_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
-      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntiw,physics%Model%index_of_process_macro),                  "dqi_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
-      call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntclamt,physics%Model%index_of_process_macro),               "dqa_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, physics, physics%Model%dtidx(physics%Model%index_of_temperature,physics%Model%index_of_process_macro),      "dT_dt_macro",    scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, physics, physics%Model%dtidx(100+physics%Model%ntqv,physics%Model%index_of_process_macro),                  "dq_dt_macro",    scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, physics, physics%Model%dtidx(100+physics%Model%ntcw,physics%Model%index_of_process_macro),                  "dql_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, physics, physics%Model%dtidx(100+physics%Model%ntiw,physics%Model%index_of_process_macro),                  "dqi_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
+      call output_append_tendency(ncid, physics, physics%Model%dtidx(100+physics%Model%ntclamt,physics%Model%index_of_process_macro),               "dqa_dt_macro",   scm_state%itt_diag, inverse_n_diag*inverse_dt)
       if (physics%Model%do_liq_num) then
-        call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntlnc,physics%Model%index_of_process_macro),               "dqln_dt_macro",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
+        call output_append_tendency(ncid, physics, physics%Model%dtidx(100+physics%Model%ntlnc,physics%Model%index_of_process_macro),               "dqln_dt_macro",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
       end if
       if (physics%Model%do_ice_num) then
-        call output_append_tendency(ncid, scm_state, physics, physics%Model%dtidx(100+physics%Model%ntinc,physics%Model%index_of_process_macro),               "dqin_dt_macro",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
+        call output_append_tendency(ncid, physics, physics%Model%dtidx(100+physics%Model%ntinc,physics%Model%index_of_process_macro),               "dqin_dt_macro",  scm_state%itt_diag, inverse_n_diag*inverse_dt)
       end if
     end if
     

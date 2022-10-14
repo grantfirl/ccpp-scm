@@ -457,18 +457,42 @@
   type = real
   kind = kind_phys
   active = (do_tiedtke_prognostic_clouds)
-[dcond_ls]
-  standard_name = change_in_cloud_condensate_due_to_nonconvective_condensation
-  long_name = change in cloud condensate due to nonconvective condensation
+[dcond_ls_l]
+  standard_name = change_in_liquid_cloud_condensate_due_to_nonconvective_condensation
+  long_name = change in liquid cloud condensate due to nonconvective condensation
   units = kg kg-1
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
   active = (do_tiedtke_prognostic_clouds)
-[D_eros]
+[dcond_ls_i]
+  standard_name = change_in_ice_cloud_condensate_due_to_nonconvective_condensation
+  long_name = change in iceliquid cloud condensate due to nonconvective condensation
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[d_eros]
   standard_name = tiedtke_cloud_erosion
   long_name = erosion term from Tiedtke prognostic clouds
   units = 1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[d_eros_l]
+  standard_name = tendency_of_cloud_liquid_water_due_to_cloud_erosion
+  long_name = tendency of cloud liquid water due to prognostic cloud erosion
+  units = kg kg-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[d_eros_i]
+  standard_name = tendency_of_cloud_ice_water_due_to_cloud_erosion
+  long_name = tendency of cloud ice water due to prognostic cloud erosion
+  units = kg kg-1 s-1
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
@@ -617,6 +641,22 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+[dqcdt]
+  standard_name = tendency_of_liquid_cloud_condensate_due_to_nonconvective_condensation
+  long_name = tendency of liquid cloud condensate due to nonconvective condensation
+  units = kg kg-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[dqidt]
+  standard_name = tendency_of_ice_cloud_condensate_due_to_nonconvective_condensation
+  long_name = tendency of ice cloud condensate due to nonconvective condensation
+  units = kg kg-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [dqsdT]
   standard_name = derivative_of_saturation_specific_humidity_with_respect_to_temperature
   long_name = derivative of saturation specific humidity with respect to temperature
@@ -1520,6 +1560,22 @@
   units = count
   dimensions = ()
   type = integer
+[nerosc]
+  standard_name = tendency_of_mass_number_concentration_of_cloud_liquid_water_particles_in_air_due_to_cloud_erosion
+  long_name = tendency of mass number concentration of cloud liquid water particles in air due to cloud erosion
+  units = kg-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
+[nerosi]
+  standard_name = tendency_of_mass_number_concentration_of_cloud_ice_water_crystals_in_air_due_to_cloud_erosion
+  long_name = tendency of mass number concentration of cloud ice water crystals in air due to cloud erosion
+  units = kg-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [nf_aelw]
   standard_name = number_of_aerosol_output_fields_for_longwave_radiation
   long_name = number of aerosol output fields for longwave radiation
