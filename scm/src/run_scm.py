@@ -9,8 +9,7 @@ import shutil
 import subprocess
 import sys
 import time
-#from suite_info import suite, suite_list
-import suite_info
+from suite_info import suite, suite_list
 from netCDF4 import Dataset
 import importlib
 
@@ -790,213 +789,6 @@ def main():
         gdb = find_gdb()
     else:
         gdb = None
-<<<<<<< HEAD
-    
-    if multirun:
-        # For maximum flexibility, run the SCM as specified from an external file where cases, suites, and physics namelists
-        # are all specified. This file must contain python lists called 'cases','suites', and 'namelists'. The suites and
-        # namelists lists can be empty ([]) if necessary.
-        #The following rules apply:
-        # 1. The case list in the file must not be empty.
-        # 2. If only a case list is specified, the cases are run with the default suite specified in run_scm.py with
-        #       the default namelists specified in default_namelists.py.
-        # 3. If a case list and suite list is provided without a namelist list, all permutations of cases and suites will
-        #       be run using default namelists specified in default_namelists.py.
-        # 4. If a case list and suite list is provided with a namelist:
-        # 4a. If only one suite is specified, it can be run with any number of namelists.
-        # 4b. If more than one suite is specified, the number of namelists must match, and each case is run with each
-        #       (suite,namelist) pair, by order specified in the lists.
-        # 5. If a case list and namelist list are specified without a suite list, each case is run with the default suite
-        #       specified in run_scm.py using the supplied namelists.
-        if file:
-            logging.info('Multi-run: Using {} to loop through defined runs'.format(file))
-            try:
-                dirname, basename = os.path.split(file)
-                sys.path.append(dirname)
-                module_name = os.path.splitext(basename)[0]
-                scm_runs = importlib.import_module(module_name)
-                sys.path.pop()
-            except ImportError:
-                message = 'There was a problem loading {0}. Please check that the path exists.'.format(file)
-                logging.critical(message)
-                raise Exception(message)
-            
-            if not scm_runs.cases:
-                message = 'The cases list in {0} must not be empty'.format(file)
-                logging.critical(message)
-                raise Exception(message)
-            
-            if scm_runs.cases and not scm_runs.suites and not scm_runs.namelists:
-                logging.warning(
-                    'Only cases were specified in {0}, so running all cases with the default suite'.format(file))
-                
-                active_suite = None
-                for s in suite_info.suite_list:
-                    if suite_name == s._name:
-                        active_suite = s
-                        break
-                
-                for i, case in enumerate(scm_runs.cases,1):
-                    logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
-                        i, len(cases), case, active_suite._name, active_suite.namelist))
-                    exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
-                    exp_dir = exp.setup_rundir()
-                    (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = MULTIRUN_IGNORE_ERROR)
-                    if status == 0:
-                        logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'.format(case, active_suite._name, active_suite.namelist))
-                    else:
-                        logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'.format(case, active_suite._name, active_suite.namelist, status))
-                    if time_elapsed:
-                        logging.info('    Elapsed time: {0}s'.format(time_elapsed))
-                    if docker:
-                        copy_outdir(exp_dir)
-            
-            if scm_runs.cases and scm_runs.suites:
-                if scm_runs.namelists:
-                    if len(scm_runs.suites) == 1:
-                        logging.info('Cases and namelists were specified with 1 suite in {0}, so running all cases with '\
-                            'the suite {1} for all specified namelists'.format(file, scm_runs.suites[0]))
-                        
-                        active_suite = None
-                        for s in suite_info.suite_list:
-                            if scm_runs.suites[0] == s._name:
-                                active_suite = s
-                                break
-                        
-                        for i, case in enumerate(scm_runs.cases):
-                            for j, namelist in enumerate(scm_runs.namelists,1):
-                                active_suite.namelist = namelist
-                                logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
-                                    len(scm_runs.cases)*i+j, len(scm_runs.cases)*len(scm_runs.namelists), case, active_suite._name, active_suite.namelist))
-                                exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
-                                exp_dir = exp.setup_rundir()
-                                (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = MULTIRUN_IGNORE_ERROR)
-                                if status == 0:
-                                    logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'.format(case, active_suite._name, active_suite.namelist))
-                                else:
-                                    logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'.format(case, active_suite._name, active_suite.namelist, status))
-                                if time_elapsed:
-                                    logging.info('    Elapsed time: {0}s'.format(time_elapsed))
-                                if docker:
-                                    copy_outdir(exp_dir)
-                                
-                    elif len(scm_runs.suites) == len(scm_runs.namelists):
-                        logging.info('Cases, suites, and namelists were specified in {0}, so running all cases with all '\
-                            'suites, matched with namelists by order'.format(file))
-                        for i, case in enumerate(scm_runs.cases):
-                            for j, suite in enumerate(scm_runs.suites,1):
-                                
-                                active_suite = None
-                                for s in suite_info.suite_list:
-                                    if suite == s._name:
-                                        active_suite = s
-                                        break
-                                
-                                active_suite.namelist = scm_runs.namelists[j-1]
-                                logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
-                                    len(scm_runs.cases)*i+j, len(scm_runs.cases)*len(scm_runs.suites), case, active_suite._name, active_suite.namelist))
-                                exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
-                                exp_dir = exp.setup_rundir()
-                                (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = MULTIRUN_IGNORE_ERROR)
-                                if status == 0:
-                                    logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'.format(case, active_suite._name, active_suite.namelist))
-                                else:
-                                    logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'.format(case, active_suite._name, active_suite.namelist, status))
-                                if time_elapsed:
-                                    logging.info('    Elapsed time: {0}s'.format(time_elapsed))
-                                if docker:
-                                    copy_outdir(exp_dir)
-                                 
-                    else:
-                        message = 'The number of suites and namelists specified in {0} is incompatible. Either use one '\
-                            'suite with many namelists or the number of suites must match the number of namelists '\
-                            'provided.'.format(file)
-                        logging.critical(message)
-                        raise Exception(message)
-                else:
-                    logging.info('Cases and suites specified in {0}, so running all cases with all suites using default '\
-                        'namelists for each suite'.format(file))
-                    for i, case in enumerate(scm_runs.cases):
-                        for j, suite in enumerate(scm_runs.suites,1):
-                            
-                            active_suite = None
-                            for s in suite_info.suite_list:
-                                if suite == s._name:
-                                    active_suite = s
-                                    break                            
-                            
-                            logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
-                                len(scm_runs.cases)*i+j, len(scm_runs.cases)*len(scm_runs.suites), case, active_suite._name, active_suite.namelist))
-                            exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
-                            exp_dir = exp.setup_rundir()
-                            (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = MULTIRUN_IGNORE_ERROR)
-                            if status == 0:
-                                logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'.format(case, active_suite._name, active_suite.namelist))
-                            else:
-                                logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'.format(case, active_suite._name, active_suite.namelist, status))
-                            if time_elapsed:
-                                logging.info('    Elapsed time: {0}s'.format(time_elapsed))
-                            if docker:
-                                copy_outdir(exp_dir)
-            
-            if scm_runs.cases and not scm_runs.suites and scm_runs.namelists:
-                logging.info('Cases and namelists were specified in {0}, so running all cases with the default suite '\
-                    'using the list of namelists'.format(file))
-                
-                active_suite = None
-                for s in suite_info.suite_list:
-                    if suite_name == s._name:
-                        active_suite = s
-                        break
-                
-                for i, case in enumerate(scm_runs.cases):
-                    for j, namelist in enumerate(scm_runs.namelists,1):
-                        logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
-                            len(scm_runs.cases)*i+j, len(scm_runs.cases)*len(scm_runs.namelists), case, active_suite._name, active_suite.namelist))
-                        active_suite.namelist = namelist
-                        exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
-                        exp_dir = exp.setup_rundir()
-                        (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = MULTIRUN_IGNORE_ERROR)
-                        if status == 0:
-                            logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'.format(case, active_suite._name, active_suite.namelist))
-                        else:
-                            logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'.format(case, active_suite._name, active_suite.namelist, status))
-                        if time_elapsed:
-                            logging.info('    Elapsed time: {0}s'.format(time_elapsed))
-                        if docker:
-                            copy_outdir(exp_dir)
-                        
-        else:
-            # Loop through all experiments
-            logging.info('Multi-run: loop through all cases and suite definition files with standard namelists and tracer configs')
-            
-            # determine the number of suites to run through
-            active_suite_list = []
-            if SUITE_CHOICE == 'supported':
-                for s in suite_info.suite_list:
-                    if s._supported:
-                        active_suite_list.append(s)        
-            else:
-                active_suite_list = suite_info.suite_list
-            
-            for i, case in enumerate(cases):
-                for j, active_suite in enumerate(active_suite_list,1):
-                    logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
-                        len(active_suite_list)*i+j, len(cases)*len(active_suite_list), case, active_suite._name, active_suite.namelist))
-                    exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
-                    exp_dir = exp.setup_rundir()
-                    (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = MULTIRUN_IGNORE_ERROR)
-                    if status == 0:
-                        logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'.format(case, active_suite._name, active_suite.namelist))
-                    else:
-                        logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'.format(case, active_suite._name, active_suite.namelist, status))
-                    if time_elapsed:
-                        logging.info('    Elapsed time: {0}s'.format(time_elapsed))
-                    if docker:
-                        copy_outdir(exp_dir)
-        logging.info('Done.')
-        
-=======
 
     if (file != None):
         logging.info('SCM-run: Using {} to loop through defined runs'.format(file))
@@ -1011,7 +803,6 @@ def main():
             message = 'There was a problem loading {0}. Please check that the path exists.'.format(file)
             logging.critical(message)
             raise Exception(message)
->>>>>>> main
     else:
         logging.info('SCM-run: Using single provided case')
         run_list = [{"case": case, "suite": sdf}]
@@ -1028,19 +819,6 @@ def main():
         # If supported, copy default configuration, modify below if necessary.
         #
         active_suite = None
-<<<<<<< HEAD
-        for s in suite_info.suite_list:
-            if suite_name == s._name:
-                active_suite = s
-                break
-            
-        if (active_suite is None):
-            if (namelist and tracers):
-                if timestep:
-                    active_suite = suite_info.suite(suite_name, tracers, namelist, timestep, -1, False)
-                else:
-                    active_suite = suite_info.suite(suite_name, tracers, namelist, -1, -1, False)
-=======
         for s in suite_list:
             if run["suite"] == s._name:
                 active_suite = s
@@ -1076,7 +854,6 @@ def main():
                     active_suite = suite(run["suite"], run["tracers"], run["namelist"], timestep, -1, False)
                 else:
                     active_suite = suite(run["suite"], run["tracers"], run["namelist"], -1, -1, False)
->>>>>>> main
             else:
                 message = 'The given suite {0}, does not have defaults set in suite_info.py and either the tracers file or physics namelist file (or both) were not provided.'.format(run["suite"])
                 logging.critical(message)
