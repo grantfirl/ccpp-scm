@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import argparse
-import atexit
 import f90nml
 import logging
 import os
@@ -13,8 +12,6 @@ import time
 #from suite_info import suite, suite_list
 import suite_info
 from netCDF4 import Dataset
-# multi-run
-from supported_cases import cases
 import importlib
 
 ###############################################################################
@@ -44,10 +41,6 @@ MULTIRUN_IGNORE_ERROR = True
 # Default output periods
 DEFAULT_OUTPUT_PERIOD = 6
 DEFAULT_DIAG_PERIOD = 6
-
-# which suites in suite_info to use when running through suites
-SUITE_CHOICE = 'supported'
-#SUITE_CHOIE = 'all'
 
 # Path to the directory containing experiment namelists (relative to scm_root)
 CASE_NAMELIST_DIR = 'scm/etc/case_config'
@@ -107,10 +100,6 @@ TAU_LINK             = 'ugwp_limb_tau.nc'
 ###############################################################################
 
 parser = argparse.ArgumentParser()
-mgroup = parser.add_argument_group('Multiple experiments')
-mgroup.add_argument('-m', '--multirun',   help='run multiple experiments (loop through supported cases and suites , '\
-    'if no file provided OR loop through run as specified by the file) mutually exclusive with --case --suite --namelist --tracers', action='store_true', default=False)
-mgroup.add_argument('-f', '--file',       help='name of file where multiple SCM runs are defined')
 sgroup = parser.add_argument_group('Single experiment')
 sgroup.add_argument('-c', '--case',       help='name of case to run')
 sgroup.add_argument('-s', '--suite',      help='name of suite to use')
@@ -130,6 +119,7 @@ parser.add_argument('--n_itt_out',        help='period of instantaneous output (
 parser.add_argument('--n_itt_diag',       help='period of diagnostic output (number of timesteps)', required=False, type=int)
 parser.add_argument('-dt', '--timestep',  help='timestep (s)', required=False, type=float)
 parser.add_argument('-v', '--verbose',    help='set logging level to debug and write log to file', action='count', default=0)
+parser.add_argument('-f', '--file',       help='name of file where SCM runs are defined')
 
 ###############################################################################
 # Functions and subroutines                                                   #
@@ -177,20 +167,11 @@ def execute(cmd, ignore_error = False):
 def parse_arguments():
     """Parse command line arguments"""
     args = parser.parse_args()
-    multirun = args.multirun
+    file = args.file
     case = args.case
-    suite = args.suite
+    sdf = args.suite
     namelist = args.namelist
     tracers = args.tracers
-    # Consistency checks
-    if (multirun and (case or suite or namelist or tracers)) \
-            or (not multirun and not case):
-        raise Exception("Specify either --multirun or --case [--suite --namelist --tracers]")
-    if not suite:
-        suite = DEFAULT_SUITE
-    file = args.file
-    if (file and not multirun):
-        logging.info('The --file argument is only applicable when --multirun is specified. Ignoring --file argument.')
     gdb = args.gdb
     runtime = args.runtime
     runtime_mult = args.runtime_mult
@@ -206,7 +187,12 @@ def parse_arguments():
     bin_dir = args.bin_dir
     timestep = args.timestep
     
-    return (multirun, file, case, suite, namelist, tracers, gdb, runtime, runtime_mult, docker, verbose, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag, run_dir, bin_dir, timestep)
+    if not sdf:
+        sdf = DEFAULT_SUITE
+    
+    return (file, case, sdf, namelist, tracers, gdb, runtime, runtime_mult, docker, \
+            verbose, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out,   \
+            n_itt_diag, run_dir, bin_dir, timestep)
 
 def find_gdb():
     """Detect gdb, abort if not found"""
@@ -721,8 +707,12 @@ class Experiment(object):
             execute(cmd)
         
         #Inform user of timestep and output intervals
-        logging.info('Using {0}s as the timestep with an instantaneous output period of {1}s and a diagnostic output period of {2}s'.format(
-            case_nml['case_config']['dt'],case_nml['case_config']['dt']*case_nml['case_config']['n_itt_out'],case_nml['case_config']['dt']*case_nml['case_config']['n_itt_diag']))
+        if self._timestep:
+            logging.info('Using {0}s as the timestep with an instantaneous output period of {1}s and a diagnostic output period of {2}s'.format(
+                case_nml['case_config']['dt'],case_nml['case_config']['dt']*case_nml['case_config']['n_itt_out'],case_nml['case_config']['dt']*case_nml['case_config']['n_itt_diag']))
+        else:
+            logging.info('Using the default timestep in src/scm_input.F90 with an instantaneous output period of {0}*dt and a diagnostic output period of {1}*dt'.format(
+                case_nml['case_config']['n_itt_out'],case_nml['case_config']['n_itt_diag']))
         
         return os.path.join(SCM_RUN, output_dir)
 
@@ -765,7 +755,9 @@ def copy_outdir(exp_dir):
     shutil.copytree(exp_dir, home_output_dir)
 
 def main():
-    (multirun, file, case, suite_name, namelist, tracers, use_gdb, runtime, runtime_mult,  docker, verbose, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag, run_dir, bin_dir, timestep) = parse_arguments()
+    (file, case, sdf, namelist, tracers, use_gdb, runtime, runtime_mult, docker, \
+     verbose, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out,       \
+     n_itt_diag, run_dir, bin_dir, timestep) = parse_arguments()
     
     global SCM_ROOT
     SCM_ROOT = os.getenv('SCM_ROOT')
@@ -798,6 +790,7 @@ def main():
         gdb = find_gdb()
     else:
         gdb = None
+<<<<<<< HEAD
     
     if multirun:
         # For maximum flexibility, run the SCM as specified from an external file where cases, suites, and physics namelists
@@ -1003,9 +996,39 @@ def main():
                         copy_outdir(exp_dir)
         logging.info('Done.')
         
+=======
+
+    if (file != None):
+        logging.info('SCM-run: Using {} to loop through defined runs'.format(file))
+        try:
+            dirname, basename = os.path.split(file)
+            sys.path.append(dirname)
+            module_name = os.path.splitext(basename)[0]
+            scm_runs = importlib.import_module(module_name)
+            run_list = scm_runs.run_list
+            sys.path.pop()
+        except ImportError:
+            message = 'There was a problem loading {0}. Please check that the path exists.'.format(file)
+            logging.critical(message)
+            raise Exception(message)
+>>>>>>> main
     else:
-        # Single experiment
+        logging.info('SCM-run: Using single provided case')
+        run_list = [{"case": case, "suite": sdf}]
+        if (namelist != None): run_list[0]["namelist"] = namelist
+        if (tracers  != None): run_list[0]["tracers"]  = tracers
+
+    # Loop through all input "run dictionaires"
+    irun = 0
+    for run in run_list:
+
+        #
+        # Is this a "supported" SCM configuration?
+        # (e.g Do we have defualt namelist and tracer files for this suite?)
+        # If supported, copy default configuration, modify below if necessary.
+        #
         active_suite = None
+<<<<<<< HEAD
         for s in suite_info.suite_list:
             if suite_name == s._name:
                 active_suite = s
@@ -1017,33 +1040,75 @@ def main():
                     active_suite = suite_info.suite(suite_name, tracers, namelist, timestep, -1, False)
                 else:
                     active_suite = suite_info.suite(suite_name, tracers, namelist, -1, -1, False)
+=======
+        for s in suite_list:
+            if run["suite"] == s._name:
+                active_suite = s
+                break
+        #
+        # A) Supported SCM configuration
+        #
+        if active_suite:
+            irun = irun + 1
+
+            # If namelist provided, use. Otherwise use default namelist for this suite
+            try:
+                active_suite.namelist = run["namelist"]
+                logging.info('Using provided namelist for suite={0}'.format(run["suite"]))
+            except:
+                logging.info('Using default namelist for suite={0}'.format(run["suite"]))
+                
+            # If tracer file provided, use. Otherwise use default tracer file for this suite
+            try: 
+                active_suite.tracers = run["tracers"]
+                logging.info('Using provided tracer file for suite={0}'.format(run["suite"]))
+            except:
+                logging.info('Using default tracer file for suite={0}'.format(run["suite"]))
+        #
+        # B) Not supported SCM configuration. Need to check that all required info is provided.
+        #
+        else:
+            logging.info('Suite provided, {0}, does not have default namelist and tracer information'.format(run["suite"]))
+            # If namelist and tracer file provided, use. Otherwise error.
+            if ("namelist" in run) and ("tracers" in run):
+                irun = irun + 1
+                if timestep: 
+                    active_suite = suite(run["suite"], run["tracers"], run["namelist"], timestep, -1, False)
+                else:
+                    active_suite = suite(run["suite"], run["tracers"], run["namelist"], -1, -1, False)
+>>>>>>> main
             else:
-                message = 'The given suite ({0}), does not have defaults set in suite_info.py and either the tracers file or physics namelist file (or both) were not provided.'.format(suite_name)
+                message = 'The given suite {0}, does not have defaults set in suite_info.py and either the tracers file or physics namelist file (or both) were not provided.'.format(run["suite"])
                 logging.critical(message)
                 raise Exception(message)
-        else:
-            if namelist:
-                active_suite.namelist = namelist
-            if tracers:
-                active_suite.tracers = tracers
-            if timestep:
-                active_suite.timestep = timestep
-        
-        suite_string = 'suite {0}'.format(active_suite._name)
-        namelist_string = 'namelist {0}'.format(active_suite.namelist)
-        tracers_string = 'tracers {0}'.format(active_suite.tracers)
-        logging.info('Setting up experiment {case} with {suite} using {namelist} and {tracers}'.format(
-            case=case, suite=suite_string, namelist=namelist_string, tracers=tracers_string))
-        exp = Experiment(case, active_suite, runtime, runtime_mult, levels, npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
+
+        #
+        # Run the SCM case
+        #
+        logging.info('Executing process {0} of {1}: case={2}, suite={3}, namelist={4}'.format(
+            irun, len(run_list), run["case"], run["suite"], active_suite.namelist))
+        #
+        exp = Experiment(run["case"], active_suite, runtime, runtime_mult, levels, \
+                         npz_type, vert_coord_file, case_data_dir, n_itt_out, n_itt_diag)
+        #
         exp_dir = exp.setup_rundir()
-        logging.info('Launching experiment {case} with {suite} using {namelist} and {tracers}'.format(
-            case=case, suite=suite_string, namelist=namelist_string, tracers=tracers_string))
-        # Launch model on exit
+        if len(run_list) > 1:
+            l_ignore_error = MULTIRUN_IGNORE_ERROR
+        else:
+            l_ignore_error = False
+        (status, time_elapsed) = launch_executable(use_gdb, gdb, ignore_error = l_ignore_error)
+        #
+        if status == 0:
+            logging.info('Process "(case={0}, suite={1}, namelist={2}" completed successfully'. \
+                         format(run["case"], run["suite"], active_suite.namelist))
+        else:
+            logging.warning('Process "(case={0}, suite={1}, namelist={2}" exited with code {3}'. \
+                            format( run["case"], run["suite"], active_suite.namelist, status))
+        #
+        if time_elapsed:
+            logging.info('    Elapsed time: {0}s'.format(time_elapsed))
         if docker:
-            #registering this function first should mean that it executes last, which is what we want
-            atexit.register(copy_outdir, exp_dir)
-        # Ignore time_elapsed return value for single experiment
-        atexit.register(launch_executable, use_gdb, gdb)    
-    
+            copy_outdir(exp_dir)
+
 if __name__ == '__main__':
     main()
