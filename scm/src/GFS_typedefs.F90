@@ -3117,7 +3117,7 @@ module GFS_typedefs
     !--- Tiedtke prognostic cloud scheme parameters
     !GJF default values of u00 through single_gaussian_pdf come from tiedtke_macro module in AM4
     !real(kind=kind_phys) :: u00                  = 0.80
-    logical              :: tiedtke_prog_clouds  = .true.
+    logical              :: tiedtke_prog_clouds  = .false.
     logical              :: u00_profile          = .true.
     real(kind=kind_phys) :: eros_scale           = 1.E-06
     logical              :: eros_choice          = .false.
@@ -3641,7 +3641,9 @@ module GFS_typedefs
                                addsmoke_flag, fire_turb, mix_chem,                          &
                           !--- (DFI) time ranges with radar-prescribed microphysics tendencies
                           !          and (maybe) convection suppression
-                               fh_dfi_radar, radar_tten_limits, do_cap_suppress
+                               fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
+                          !--- Tiedtke prognostic clouds
+                               tiedtke_prog_clouds
 
 !--- other parameters
     integer :: nctp    =  0                !< number of cloud types in CS scheme
