@@ -393,8 +393,16 @@ for i in range(len(scm_datasets)):
     qi.append(nc_fid.variables['qi'][:])
     inst_time_group.append('qi')
     
-    qa.append(nc_fid.variables['qa'][:])
-    inst_time_group.append('qa')
+    try:
+        qa.append(nc_fid.variables['qa'][:])
+        inst_time_group.append('qa')
+        print(qa[-1].shape)
+        for t in range(qa[-1].shape[0]):
+            print(t, np.min(qv[-1][t,:,0]), np.mean(qv[-1][t,:,0]), np.max(qv[-1][t,:,0]), np.where(qv[-1]==np.NaN)[0])
+    except KeyError:
+        print('qa is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        qa.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
     
     qv_force_tend.append(nc_fid.variables['qv_force_tend'][:])
     inst_time_group.append('qv_force_tend')
@@ -959,7 +967,7 @@ if(plot_ind_datasets):
                             obs_data_time_slice = obs_data[obs_dict['time_slice_indices'][j][0]:obs_dict['time_slice_indices'][j][1],:]
 
                             obs_mean_data = np.mean(obs_data_time_slice, (0))
-
+                            
                             spr.plot_profile_multi(vert_axis, [mean_data], [scm_datasets_labels[i]], label, vert_axis_label_pm, ind_dir + '/profiles_mean_' + profiles_mean['vars'][k] + plot_ext, y_inverted=y_inverted_val_pm, y_log=y_log_val_pm, y_lim=y_lim_val, obs_z=obs_vert_axis, obs_values=obs_mean_data, line_type='color', color_index=i, conversion_factor=conversion_factor)
 
                         else:

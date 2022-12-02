@@ -87,6 +87,7 @@
     trans_trac = .true.
     ttendlim = -999
     use_ufo = .true.
+    dt_inner     = 60
 /
 
 &cires_ugwp_nml
