@@ -7307,6 +7307,22 @@
   type = real
   kind = kind_phys
   active = (flag_for_mellor_yamada_nakanishi_niino_pbl_scheme)
+[dqadt_pbl]
+  standard_name = tendency_of_cloud_fraction_due_to_pbl_scheme
+  long_name = cloud fraction tendency due to pbl scheme
+  units = s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_mellor_yamada_nakanishi_niino_pbl_scheme .and. do_tiedtke_prognostic_clouds)
+[dqcdt_pbl]
+  standard_name = tendency_of_cloud_liquid_water_due_to_pbl_scheme
+  long_name = cloud liquid water tendency due to pbl scheme
+  units = kg kg-1 s-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (flag_for_mellor_yamada_nakanishi_niino_pbl_scheme .and. do_tiedtke_prognostic_clouds)
 [phy_myj_qsfc]
   standard_name = surface_specific_humidity_for_MYJ_schemes
   long_name = surface air saturation specific humidity for MYJ schemes

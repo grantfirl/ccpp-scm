@@ -1599,6 +1599,8 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: tsq        (:,:)   => null()  !
     real (kind=kind_phys), pointer :: qsq        (:,:)   => null()  !
     real (kind=kind_phys), pointer :: cov        (:,:)   => null()  !
+    real (kind=kind_phys), pointer :: dqadt_pbl  (:,:)   => null()  !
+    real (kind=kind_phys), pointer :: dqcdt_pbl  (:,:)   => null()  !
 
     !--- MYJ schemes saved variables (from previous time step)
     real (kind=kind_phys), pointer :: phy_myj_qsfc(:)    => null()  !
@@ -6546,6 +6548,12 @@ module GFS_typedefs
        Tbd%tsq           = clear_val
        Tbd%qsq           = clear_val
        Tbd%cov           = clear_val
+       if (Model%tiedtke_prog_clouds) then
+          allocate (Tbd%dqadt_pbl (IM,Model%levs))
+          allocate (Tbd%dqcdt_pbl (IM,Model%levs))
+          Tbd%dqadt_pbl  = zero
+          Tbd%dqcdt_pbl  = zero
+       endif
     end if
 
     ! MYJ variables
