@@ -308,9 +308,9 @@ subroutine output_init_interstitial(ncid, time_inst_id, time_rad_id, hor_dim_id,
     call NetCDF_def_var(ncid, 'q_sat_l', NF90_FLOAT, "Tiedtke saturation specific humidity WRT liquid",                                  "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
     call NetCDF_def_var(ncid, 'q_sat_i', NF90_FLOAT, "Tiedtke saturation specific humidity WRT ice",                                     "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
     
-    call NetCDF_def_var(ncid, 'qa_upd',  NF90_FLOAT, "Tiedtke-updated cloud area fraction (including realizibility)",                    "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
-    call NetCDF_def_var(ncid, 'ql_upd',  NF90_FLOAT, "Tiedtke cloud liquid water after realizibility check",                             "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
-    call NetCDF_def_var(ncid, 'qi_upd',  NF90_FLOAT, "Tiedtke cloud ice water after realizibility check",                                "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'qa_upd',  NF90_FLOAT, "Tiedtke-updated cloud area fraction (including realizability)",                    "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'ql_upd',  NF90_FLOAT, "Tiedtke cloud liquid water after realizability check",                             "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'qi_upd',  NF90_FLOAT, "Tiedtke cloud ice water after realizability check",                                "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
     
     call NetCDF_def_var(ncid, 'non_cnv_rh',  NF90_FLOAT, "Tiedtke relative humidity outside of convective clouds",                       "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
     call NetCDF_def_var(ncid, 'non_cnv_max_qa',  NF90_FLOAT, "Tiedtke maximum cloud area fraction outside of convective clouds",         "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
@@ -324,7 +324,7 @@ subroutine output_init_interstitial(ncid, time_inst_id, time_rad_id, hor_dim_id,
     call NetCDF_def_var(ncid, 'nerosi', NF90_FLOAT, "Tiedtke cloud ice mass number concentration tendency from erosion",                 "# kg-1 s-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
     
     if (physics%model%do_mynnedmf) then
-      call NetCDF_def_var(ncid, 'dqadt_pbl', NF90_FLOAT, "cloud fraction tendency from PBL",                                             "fraction s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+      call NetCDF_def_var(ncid, 'sa_pbl', NF90_FLOAT, "change in cloud fraction from PBL",                                             "fraction s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
       call NetCDF_def_var(ncid, 'dqcdt_pbl', NF90_FLOAT, "cloud liquid water tendency from PBL",                                         "kg kg-1 s-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
     end if
     
@@ -701,7 +701,7 @@ subroutine output_append_interstitial_inst(ncid, scm_state, physics)
       call NetCDF_put_var(ncid, "nerosi",      physics%Interstitial%nerosc(:,:), scm_state%itt_out)
       
       if (physics%model%do_mynnedmf) then
-        call NetCDF_put_var(ncid, "dqadt_pbl",       physics%Tbd%dqadt_pbl(:,:), scm_state%itt_out)
+        call NetCDF_put_var(ncid, "sa_pbl",          physics%Tbd%dqadt_pbl(:,:)*scm_state%dt, scm_state%itt_out)
         call NetCDF_put_var(ncid, "dqcdt_pbl",       physics%Tbd%dqcdt_pbl(:,:), scm_state%itt_out)
       end if
     end if

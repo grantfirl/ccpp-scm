@@ -214,6 +214,30 @@ sfc_dwn_sw_dif_vis = []
 mp_prcp_inst       = []
 dcnv_prcp_inst     = []
 scnv_prcp_inst     = []
+sa                 = []
+sl                 = []
+si                 = []
+sn                 = []
+sni                = []
+sq                 = []
+st                 = []
+q_sat              = []
+q_sat_l            = []
+q_sat_i            = []
+qa_upd             = []
+ql_upd             = []
+qi_upd             = []
+non_cnv_rh         = []
+non_cnv_max_qa     = []
+da_ls              = []
+d_eros_l           = []
+d_eros_i           = []
+dqcdt              = []
+dqidt              = []
+nerosc             = []
+nerosi             = []
+sa_pbl             = []
+dqcdt_pbl          = []
 rad_cloud_fraction = []
 rad_cloud_lwp      = []
 rad_eff_rad_ql     = []
@@ -247,6 +271,7 @@ dT_dt_pbl = []
 dT_dt_deepconv = []
 dT_dt_shalconv = []
 dT_dt_micro = []
+dT_dt_macro = []
 dT_dt_conv = []
 dT_dt_ogwd = []
 dT_dt_rayleigh = []
@@ -257,6 +282,7 @@ dq_dt_pbl = []
 dq_dt_deepconv = []
 dq_dt_shalconv = []
 dq_dt_micro = []
+dq_dt_macro = []
 dq_dt_conv = []
 dq_dt_phys = []
 dq_dt_nonphys = []
@@ -285,6 +311,11 @@ dv_dt_shalconv = []
 dv_dt_conv = []
 dv_dt_phys = []
 dv_dt_nonphys = []
+dql_dt_macro = []
+dqi_dt_macro = []
+dqa_dt_macro = []
+dqln_dt_macro = []
+dqin_dt_macro = []
 
 tprcp_accum = []
 ice_accum = []
@@ -541,6 +572,198 @@ for i in range(len(scm_datasets)):
     scnv_prcp_inst.append(nc_fid.variables['scnv_prcp_inst'][:])
     inst_time_group.append('scnv_prcp_inst')
     
+    try:
+        sa.append(nc_fid.variables['sa'][:])
+    except KeyError:
+        print('sa is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        sa.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('sa')
+    
+    try:
+        sl.append(nc_fid.variables['sl'][:])
+    except KeyError:
+        print('sl is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        sl.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('sl')
+    
+    try:
+        si.append(nc_fid.variables['si'][:])
+    except KeyError:
+        print('si is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        si.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('si')
+    
+    try:
+        sn.append(nc_fid.variables['sn'][:])
+    except KeyError:
+        print('sn is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        sn.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('sn')
+    
+    try:
+        sni.append(nc_fid.variables['sni'][:])
+    except KeyError:
+        print('sni is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        sni.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('sni')
+    
+    try:
+        sq.append(nc_fid.variables['sq'][:])
+    except KeyError:
+        print('sq is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        sq.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('sq')
+    
+    try:
+        st.append(nc_fid.variables['st'][:])
+    except KeyError:
+        print('st is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        st.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('st')
+    
+    try:
+        q_sat.append(nc_fid.variables['q_sat'][:])
+    except KeyError:
+        print('q_sat is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        q_sat.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('q_sat')
+    
+    try:
+        q_sat_l.append(nc_fid.variables['q_sat_l'][:])
+    except KeyError:
+        print('q_sat_l is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        q_sat_l.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('q_sat_l')
+    
+    try:
+        q_sat_i.append(nc_fid.variables['q_sat_i'][:])
+    except KeyError:
+        print('q_sat_i is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        q_sat_i.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('q_sat_i')
+    
+    try:
+        qa_upd.append(nc_fid.variables['qa_upd'][:])
+    except KeyError:
+        print('qa_upd is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        qa_upd.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('qa_upd')
+    
+    try:
+        ql_upd.append(nc_fid.variables['ql_upd'][:])
+    except KeyError:
+        print('ql_upd is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        ql_upd.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('ql_upd')
+    
+    try:
+        qi_upd.append(nc_fid.variables['qi_upd'][:])
+    except KeyError:
+        print('qi_upd is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        qi_upd.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('qi_upd')
+    
+    try:
+        non_cnv_rh.append(nc_fid.variables['non_cnv_rh'][:])
+    except KeyError:
+        print('non_cnv_rh is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        non_cnv_rh.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('non_cnv_rh')
+    
+    try:
+        non_cnv_max_qa.append(nc_fid.variables['non_cnv_max_qa'][:])
+    except KeyError:
+        print('non_cnv_max_qa is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        non_cnv_max_qa.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('non_cnv_max_qa')
+    
+    try:
+        da_ls.append(nc_fid.variables['da_ls'][:])
+    except KeyError:
+        print('da_ls is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        da_ls.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('da_ls')
+    
+    try:
+        d_eros_l.append(nc_fid.variables['d_eros_l'][:])
+    except KeyError:
+        print('d_eros_l is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        d_eros_l.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('d_eros_l')
+    
+    try:
+        d_eros_i.append(nc_fid.variables['d_eros_i'][:])
+    except KeyError:
+        print('d_eros_i is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        d_eros_i.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('d_eros_i')
+    
+    try:
+        dqcdt.append(nc_fid.variables['dqcdt'][:])
+    except KeyError:
+        print('dqcdt is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqcdt.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqcdt')
+    
+    try:
+        dqidt.append(nc_fid.variables['dqidt'][:])
+    except KeyError:
+        print('dqidt is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqidt.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqidt')
+    
+    try:
+        nerosc.append(nc_fid.variables['nerosc'][:])
+    except KeyError:
+        print('nerosc is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        nerosc.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('nerosc')
+    
+    try:
+        nerosi.append(nc_fid.variables['nerosi'][:])
+    except KeyError:
+        print('nerosi is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        nerosi.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('nerosi')
+    
+    try:
+        sa_pbl.append(nc_fid.variables['sa_pbl'][:])
+    except KeyError:
+        print('sa_pbl is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        sa_pbl.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('sa_pbl')
+    
+    try:
+        dqcdt_pbl.append(nc_fid.variables['dqcdt_pbl'][:])
+    except KeyError:
+        print('dqcdt_pbl is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqcdt_pbl.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqcdt_pbl')
+    
     rad_cloud_fraction.append(nc_fid.variables['rad_cloud_fraction'][:])
     rad_time_group.append('rad_cloud_fraction')
     
@@ -613,6 +836,8 @@ for i in range(len(scm_datasets)):
     
     [dT_dt_micro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dT_dt_micro', dT_dt_micro, diag_time_group, time_diag, pres_l, scm_datasets[i])
     
+    [dT_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dT_dt_macro', dT_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    
     dT_dt_conv.append(dT_dt_deepconv[-1] + dT_dt_shalconv[-1])
     diag_time_group.append('dT_dt_conv')
     
@@ -632,7 +857,9 @@ for i in range(len(scm_datasets)):
     
     [dq_dt_shalconv, diag_time_group] = replace_fill_with_nan(nc_fid, 'dq_dt_shalconv', dq_dt_shalconv, diag_time_group, time_diag, pres_l, scm_datasets[i])
     
-    [dq_dt_micro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dq_dt_micro', dq_dt_micro, diag_time_group, time_diag, pres_l, scm_datasets[i])    
+    [dq_dt_micro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dq_dt_micro', dq_dt_micro, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    
+    [dq_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dq_dt_macro', dq_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])    
         
     dq_dt_conv.append(dq_dt_deepconv[-1] + dq_dt_shalconv[-1])
     diag_time_group.append('dq_dt_conv')
@@ -692,6 +919,12 @@ for i in range(len(scm_datasets)):
     [dv_dt_phys, diag_time_group] = replace_fill_with_nan(nc_fid, 'dv_dt_phys', dv_dt_phys, diag_time_group, time_diag, pres_l, scm_datasets[i])
     
     [dv_dt_nonphys, diag_time_group] = replace_fill_with_nan(nc_fid, 'dv_dt_nonphys', dv_dt_nonphys, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    
+    [dql_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dql_dt_macro', dql_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    [dqi_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dqi_dt_macro', dqi_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    [dqa_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dqa_dt_macro', dqa_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    [dqln_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dqln_dt_macro', dqln_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])
+    [dqin_dt_macro, diag_time_group] = replace_fill_with_nan(nc_fid, 'dqin_dt_macro', dqin_dt_macro, diag_time_group, time_diag, pres_l, scm_datasets[i])
     
     tprcp_accum.append(nc_fid.variables['tprcp_accum'][:])
     diag_time_group.append('tprcp_accum')
