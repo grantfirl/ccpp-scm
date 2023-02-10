@@ -295,6 +295,41 @@ subroutine output_init_interstitial(ncid, time_inst_id, time_rad_id, hor_dim_id,
   call NetCDF_def_var(ncid, 'rad_cloud_swp',      NF90_FLOAT, "instantaneous snow water path used in radiation (radiation timesteps only)",                   "g m-2",   dummy_id, (/ hor_dim_id, vert_dim_rad_id, time_rad_id /))
   call NetCDF_def_var(ncid, 'rad_eff_rad_qs',     NF90_FLOAT, "instantaneous effective radius for snowflake in radiation (radiation timesteps only)",         "um",      dummy_id, (/ hor_dim_id, vert_dim_rad_id, time_rad_id /))
   
+  if (physics%model%tiedtke_prog_clouds) then
+    call NetCDF_def_var(ncid, 'sa',    NF90_FLOAT, "change in Tiedtke cloud area fraction",                                              "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'sl',    NF90_FLOAT, "change in Tiedtke cloud liquid water due to condensation adjustment",                "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'si',    NF90_FLOAT, "change in Tiedtke cloud ice water due to condensation adjustment",                   "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'sn',    NF90_FLOAT, "change in Tiedtke cloud droplet number concentration due to condensation adjustment","# kg-1",   dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'sni',   NF90_FLOAT, "change in Tiedtke cloud ice number concentration due to condensation adjustment",    "# kg-1",   dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'sq',    NF90_FLOAT, "change in Tiedtke water vapor due to condensation adjustment",                       "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'st',    NF90_FLOAT, "change in Tiedtke temperature due to condensation adjustment",                       "K",        dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    
+    call NetCDF_def_var(ncid, 'q_sat',   NF90_FLOAT, "Tiedtke saturation specific humidity",                                             "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'q_sat_l', NF90_FLOAT, "Tiedtke saturation specific humidity WRT liquid",                                  "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'q_sat_i', NF90_FLOAT, "Tiedtke saturation specific humidity WRT ice",                                     "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    
+    call NetCDF_def_var(ncid, 'qa_upd',  NF90_FLOAT, "Tiedtke-updated cloud area fraction (including realizibility)",                    "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'ql_upd',  NF90_FLOAT, "Tiedtke cloud liquid water after realizibility check",                             "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'qi_upd',  NF90_FLOAT, "Tiedtke cloud ice water after realizibility check",                                "kg kg-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    
+    call NetCDF_def_var(ncid, 'non_cnv_rh',  NF90_FLOAT, "Tiedtke relative humidity outside of convective clouds",                       "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'non_cnv_max_qa',  NF90_FLOAT, "Tiedtke maximum cloud area fraction outside of convective clouds",         "fraction", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    
+    call NetCDF_def_var(ncid, 'da_ls', NF90_FLOAT, "change in saturated volume fraction due to large-scale processes",                   "fraction",    dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'd_eros_l', NF90_FLOAT, "Tiedtke cloud liquid water tendency due to erosion",                              "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'd_eros_i', NF90_FLOAT, "Tiedtke cloud ice water tendency due to erosion",                                 "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'dqcdt', NF90_FLOAT, "Tiedtke cloud liquid water tendency without erosion",                                "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'dqidt', NF90_FLOAT, "Tiedtke cloud ice water tendency without erosion",                                   "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'nerosc', NF90_FLOAT, "Tiedtke cloud droplet mass number concentration tendency from erosion",             "# kg-1 s-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'nerosi', NF90_FLOAT, "Tiedtke cloud ice mass number concentration tendency from erosion",                 "# kg-1 s-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    
+    if (physics%model%do_mynnedmf) then
+      call NetCDF_def_var(ncid, 'dqadt_pbl', NF90_FLOAT, "cloud fraction tendency from PBL",                                             "fraction s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+      call NetCDF_def_var(ncid, 'dqcdt_pbl', NF90_FLOAT, "cloud liquid water tendency from PBL",                                         "kg kg-1 s-1",  dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    end if
+    
+  end if
+  
 end subroutine output_init_interstitial
 
 subroutine output_init_radtend(ncid, time_swrad_id, time_lwrad_id, hor_dim_id, vert_dim_id)
@@ -457,12 +492,10 @@ subroutine output_append(scm_state, physics, force)
     CALL CHECK(NF90_PUT_VAR(NCID=ncid,VARID=var_id,VALUES=scm_state%model_time,START=(/ scm_state%itt_out /)))
     
     call output_append_state(ncid, scm_state, physics)
-    write(*,*) 'output_append_state'
     call output_append_forcing(ncid, scm_state)
     call output_append_sfcprop(ncid, scm_state, physics)
     call output_append_interstitial_inst(ncid, scm_state, physics)
     call output_append_diag_inst(ncid, scm_state, physics)
-    write(*,*) 'output_diag_inst'
   end if
   
   if(physics%Model%lslwr .or. physics%Model%lsswr) then
@@ -484,15 +517,13 @@ subroutine output_append(scm_state, physics, force)
     call output_append_diag_rad(ncid, scm_state, physics)
   end if
   
-  write(*,*) 'before output_append_diag_avg'
   if(mod(scm_state%itt,physics%Model%nszero) == 0) then
     scm_state%itt_diag = scm_state%itt_diag + 1
     CALL CHECK(NF90_INQ_VARID(NCID=ncid,NAME="time_diag",VARID=var_id))
     CALL CHECK(NF90_PUT_VAR(NCID=ncid,VARID=var_id,VALUES=scm_state%model_time,START=(/ scm_state%itt_diag /)))
     call output_append_diag_avg(ncid, scm_state, physics)
   end if
-  write(*,*) 'after output_append_diag_avg'
-  
+    
   !> - Close the file.
   CALL CHECK(NF90_CLOSE(ncid))
 
@@ -640,7 +671,41 @@ subroutine output_append_interstitial_inst(ncid, scm_state, physics)
     call NetCDF_put_var(ncid, "mp_prcp_inst",    physics%Interstitial%prcpmp(:), scm_state%itt_out)
     call NetCDF_put_var(ncid, "dcnv_prcp_inst",  physics%Interstitial%raincd(:), scm_state%itt_out)
     call NetCDF_put_var(ncid, "scnv_prcp_inst",  physics%Interstitial%raincs(:), scm_state%itt_out)
-
+    
+    if (physics%model%tiedtke_prog_clouds) then
+      call NetCDF_put_var(ncid, "sa",       physics%Interstitial%sa(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "sl",       physics%Interstitial%sl(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "si",       physics%Interstitial%si(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "sn",       physics%Interstitial%sn(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "sni",      physics%Interstitial%sni(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "sq",       physics%Interstitial%sq(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "st",       physics%Interstitial%st(:,:), scm_state%itt_out)
+      
+      call NetCDF_put_var(ncid, "q_sat",    physics%Interstitial%q_sat(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "q_sat_l",  physics%Interstitial%q_sat_l(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "q_sat_i",  physics%Interstitial%q_sat_i(:,:), scm_state%itt_out)
+      
+      call NetCDF_put_var(ncid, "qa_upd",    physics%Interstitial%qa_upd(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "ql_upd",    physics%Interstitial%ql_upd(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "qi_upd",    physics%Interstitial%qi_upd(:,:), scm_state%itt_out)
+      
+      call NetCDF_put_var(ncid, "non_cnv_rh",     physics%Interstitial%U_ca(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "non_cnv_max_qa", physics%Interstitial%U01(:,:),  scm_state%itt_out)
+      
+      call NetCDF_put_var(ncid, "da_ls",       physics%Interstitial%da_ls(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "d_eros_l",    physics%Interstitial%d_eros_l(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "d_eros_i",    physics%Interstitial%d_eros_i(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "dqcdt",       physics%Interstitial%dqcdt(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "dqidt",       physics%Interstitial%dqidt(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "nerosc",      physics%Interstitial%nerosc(:,:), scm_state%itt_out)
+      call NetCDF_put_var(ncid, "nerosi",      physics%Interstitial%nerosc(:,:), scm_state%itt_out)
+      
+      if (physics%model%do_mynnedmf) then
+        call NetCDF_put_var(ncid, "dqadt_pbl",       physics%Tbd%dqadt_pbl(:,:), scm_state%itt_out)
+        call NetCDF_put_var(ncid, "dqcdt_pbl",       physics%Tbd%dqcdt_pbl(:,:), scm_state%itt_out)
+      end if
+    end if
+    
 end subroutine output_append_interstitial_inst
 
 subroutine output_append_interstitial_rad(ncid, scm_state, physics)
