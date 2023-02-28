@@ -238,6 +238,10 @@ nerosc             = []
 nerosi             = []
 sa_pbl             = []
 dqcdt_pbl          = []
+dqcdt_mynn         = []
+dqidt_mynn         = []
+dqndt_mynn         = []
+dqnidt_mynn        = []
 rad_cloud_fraction = []
 rad_cloud_lwp      = []
 rad_eff_rad_ql     = []
@@ -763,6 +767,38 @@ for i in range(len(scm_datasets)):
         print('Missing variables are replaced with {0}'.format(missing_value))
         dqcdt_pbl.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
     inst_time_group.append('dqcdt_pbl')
+    
+    try:
+        dqcdt_mynn.append(nc_fid.variables['dqcdt_mynn'][:])
+    except KeyError:
+        print('dqcdt_mynn is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqcdt_mynn.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqcdt_mynn')
+    
+    try:
+        dqidt_mynn.append(nc_fid.variables['dqidt_mynn'][:])
+    except KeyError:
+        print('dqidt_mynn is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqidt_mynn.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqidt_mynn')
+    
+    try:
+        dqndt_mynn.append(nc_fid.variables['dqndt_mynn'][:])
+    except KeyError:
+        print('dqndt_mynn is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqndt_mynn.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqndt_mynn')
+    
+    try:
+        dqnidt_mynn.append(nc_fid.variables['dqnidt_mynn'][:])
+    except KeyError:
+        print('dqnidt_mynn is not in the output file {0}'.format(scm_datasets[i]))
+        print('Missing variables are replaced with {0}'.format(missing_value))
+        dqnidt_mynn.append(missing_value*np.ones((len(time_inst[-1]),pres_l[-1].shape[1],pres_l[-1].shape[2])))
+    inst_time_group.append('dqnidt_mynn')
     
     rad_cloud_fraction.append(nc_fid.variables['rad_cloud_fraction'][:])
     rad_time_group.append('rad_cloud_fraction')

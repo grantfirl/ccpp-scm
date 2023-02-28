@@ -410,6 +410,13 @@ subroutine output_init_diag(ncid, time_inst_id, time_diag_id, time_rad_id, hor_d
     end if
   end if
   
+  if (physics%Model%do_mynnedmf) then
+    call NetCDF_def_var(ncid, 'dqcdt_mynn',      NF90_FLOAT, "tendency of cloud liquid water from MYNN PBL",                   "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'dqidt_mynn',      NF90_FLOAT, "tendency of cloud ice water from MYNN PBL",                      "kg kg-1 s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'dqndt_mynn',      NF90_FLOAT, "tendency of cloud droplet number concentration from MYNN PBL",   "kg-1 s-1",    dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+    call NetCDF_def_var(ncid, 'dqnidt_mynn',     NF90_FLOAT, "tendency of cloud ice number concentration from MYNN PBL",       "kg-1 s-1",    dummy_id, (/ hor_dim_id, vert_dim_id, time_inst_id /))
+  end if
+  
   call NetCDF_def_var(ncid, 'sfc_dwn_sw',      NF90_FLOAT, "surface downwelling shortwave flux (valid all timesteps)",                   "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
   call NetCDF_def_var(ncid, 'sfc_up_sw',       NF90_FLOAT, "surface upwelling shortwave flux (valid all timesteps)",                     "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
   call NetCDF_def_var(ncid, 'sfc_net_sw',      NF90_FLOAT, "surface net shortwave flux (downwelling - upwelling) (valid all timesteps)", "W m-2", dummy_id, (/ hor_dim_id, time_inst_id /))
@@ -784,6 +791,13 @@ subroutine output_append_diag_inst(ncid, scm_state, physics)
     call NetCDF_put_var(ncid, "u10m",        physics%Diag%u10m(:),   scm_state%itt_out)  !do not average (this variable is intent(out) every physics timestep in sfc_diag)
     call NetCDF_put_var(ncid, "v10m",        physics%Diag%v10m(:),   scm_state%itt_out)  !do not average (this variable is intent(out) every physics timestep in sfc_diag)
     call NetCDF_put_var(ncid, "hpbl",        physics%Tbd%hpbl(:),    scm_state%itt_out)  !do not average (this variable is intent(out) every physics timestep in individual PBL schemes)
+    
+    if (physics%Model%do_mynnedmf) then
+      call NetCDF_put_var(ncid, "dqcdt_mynn",   physics%Diag%dqcdt_mynn(:,:),  scm_state%itt_out)
+      call NetCDF_put_var(ncid, "dqidt_mynn",   physics%Diag%dqidt_mynn(:,:),  scm_state%itt_out)
+      call NetCDF_put_var(ncid, "dqndt_mynn",   physics%Diag%dqndt_mynn(:,:),  scm_state%itt_out)
+      call NetCDF_put_var(ncid, "dqnidt_mynn",  physics%Diag%dqnidt_mynn(:,:), scm_state%itt_out)
+    end if
     
     !all auxilliary diagnostics will be output every timestep (logic will need to be added to implement time averaging [move this to output_append_diag_avg when that happens] -- including resetting in GFS_typedefs/phys_diag_zero)
     if (physics%Model%naux2d > 0) then

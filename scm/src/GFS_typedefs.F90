@@ -1787,7 +1787,11 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: qshear     (:,:)   => null()  !< shear production of tke
     real (kind=kind_phys), pointer :: qbuoy      (:,:)   => null()  !< buoyancy production of tke
     real (kind=kind_phys), pointer :: qdiss      (:,:)   => null()  !< dissipation of tke
-
+    real (kind=kind_phys), pointer :: dqcdt_mynn (:,:)   => null()  !< instantaneous tendency of cloud liquid water from MYNN
+    real (kind=kind_phys), pointer :: dqidt_mynn (:,:)   => null()  !< instantaneous tendency of cloud ice from MYNN
+    real (kind=kind_phys), pointer :: dqndt_mynn (:,:)   => null()  !< instantaneous tendency of cloud droplet number concentration from MYNN
+    real (kind=kind_phys), pointer :: dqnidt_mynn(:,:)   => null()  !< instantaneous tendency of cloud ice number concentration from MYNN
+    
 ! Output - only in physics
     real (kind=kind_phys), pointer :: u10m   (:)     => null()   !< 10 meter u/v wind speed
     real (kind=kind_phys), pointer :: v10m   (:)     => null()   !< 10 meter u/v wind speed
@@ -7128,6 +7132,10 @@ module GFS_typedefs
       allocate (Diag%ktop_plume(IM))
       allocate (Diag%exch_h    (IM,Model%levs))
       allocate (Diag%exch_m    (IM,Model%levs))
+      allocate (Diag%dqcdt_mynn(IM,Model%levs))
+      allocate (Diag%dqidt_mynn(IM,Model%levs))
+      allocate (Diag%dqndt_mynn(IM,Model%levs))
+      allocate (Diag%dqnidt_mynn(IM,Model%levs))
       if (Model%bl_mynn_output .ne. 0) then
         Diag%edmf_a        = clear_val
         Diag%edmf_w        = clear_val
@@ -7152,6 +7160,10 @@ module GFS_typedefs
       Diag%ktop_plume    = 0
       Diag%exch_h        = clear_val
       Diag%exch_m        = clear_val
+      Diag%dqcdt_mynn    = clear_val
+      Diag%dqidt_mynn    = clear_val
+      Diag%dqndt_mynn    = clear_val
+      Diag%dqnidt_mynn    = clear_val
     endif
 
     ! Extended diagnostics for Thompson MP
