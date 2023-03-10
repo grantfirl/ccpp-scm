@@ -235,6 +235,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: nerosi(:,:)        => null()
     integer                             :: nf_aelw                       !<
     integer                             :: nf_aesw                       !<
+    integer                             :: nf_albd                       !<
     integer                             :: nn                            !<
     integer                             :: nsamftrac                     !<
     integer                             :: nscav                         !<
@@ -885,7 +886,8 @@ contains
     allocate (Interstitial%zngw            (IM)           )
 
 ! CIRES UGWP v1
-    if (Model%do_ugwp_v1) then
+    if (Model%ldiag_ugwp .or. Model%do_ugwp_v0 .or. Model%do_ugwp_v0_nst_only &
+        .or. Model%do_ugwp_v1) then
       allocate (Interstitial%dudt_ngw        (IM,Model%levs))
       allocate (Interstitial%dvdt_ngw        (IM,Model%levs))
       allocate (Interstitial%dtdt_ngw        (IM,Model%levs))
@@ -995,6 +997,7 @@ contains
     Interstitial%nbdsw            = NBDSW
     Interstitial%nf_aelw          = NF_AELW
     Interstitial%nf_aesw          = NF_AESW
+    Interstitial%nf_albd          = NF_ALBD
     Interstitial%nspc1            = NSPC1
     if (Model%oz_phys .or. Model%oz_phys_2015) then
       Interstitial%oz_coeffp5     = oz_coeff+5
@@ -1554,7 +1557,8 @@ contains
     Interstitial%zngw            = clear_val
 
 ! CIRES UGWP v1
-    if (Model%do_ugwp_v1) then
+    if (Model%ldiag_ugwp .or. Model%do_ugwp_v0 .or. Model%do_ugwp_v0_nst_only &
+        .or. Model%do_ugwp_v1) then
       Interstitial%dudt_ngw        = clear_val
       Interstitial%dvdt_ngw        = clear_val
       Interstitial%dtdt_ngw        = clear_val
