@@ -1697,6 +1697,14 @@
   units = flag
   dimensions = (number_of_tracers)
   type = logical
+[ovhd_cldcov]
+  standard_name = cumulative_overhead_cloud_area_fraction
+  long_name = area covered by clouds from all levels above
+  units = frac
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [oz_coeffp5]
   standard_name = number_of_coefficients_in_ozone_forcing_data_plus_five
   long_name = number of coefficients in ozone forcing data plus five

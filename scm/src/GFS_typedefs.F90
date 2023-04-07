@@ -3846,7 +3846,7 @@ module GFS_typedefs
                           !          and (maybe) convection suppression
                                fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
                           !--- Tiedtke prognostic clouds
-                               tiedtke_prog_clouds, 
+                               tiedtke_prog_clouds,                                         &
                           !--- GSL lightning threat indices
                                lightning_threat
 

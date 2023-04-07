@@ -246,6 +246,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: olyr(:,:)          => null()  !<
     logical              , pointer      :: otspt(:,:)         => null()  !<
     logical              , pointer      :: otsptflag(:)       => null()  !<
+    real (kind=kind_phys), pointer      :: ovhd_cldcov(:,:)   => null()  !<
     integer                             :: oz_coeffp5                    !<
     logical                             :: phys_hydrostatic              !<
     real (kind=kind_phys), pointer      :: plvl(:,:)          => null()  !<
@@ -853,6 +854,7 @@ contains
       allocate (Interstitial%mc_full       (IM,Model%levs))
       allocate (Interstitial%nerosc        (IM,Model%levs))
       allocate (Interstitial%nerosi        (IM,Model%levs))
+      allocate (Interstitial%ovhd_cldcov   (IM,Model%levs))
       allocate (Interstitial%ql_upd        (IM,Model%levs))
       allocate (Interstitial%qn_upd        (IM,Model%levs))
       allocate (Interstitial%qni_upd       (IM,Model%levs))
@@ -1508,6 +1510,7 @@ contains
       Interstitial%mc_full   = clear_val
       Interstitial%nerosc    = clear_val
       Interstitial%nerosi    = clear_val
+      Interstitial%ovhd_cldcov = clear_val
       Interstitial%qa_upd    = clear_val
       Interstitial%qi_upd    = clear_val
       Interstitial%ql_upd    = clear_val
