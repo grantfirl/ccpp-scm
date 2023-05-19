@@ -57,6 +57,9 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: airdens(:,:)       => null()
     real (kind=kind_phys), pointer      :: alb1d(:)           => null()  !<
     real (kind=kind_phys), pointer      :: alpha(:,:)         => null()  !<
+    real (kind=kind_phys), pointer      :: ap(:,:)            => null()  !<
+    real (kind=kind_phys), pointer      :: ap_cld(:,:)        => null()  !<
+    real (kind=kind_phys), pointer      :: ap_clr(:,:)        => null()  !<
     real (kind=kind_phys), pointer      :: bexp1d(:)          => null()  !<
     real (kind=kind_phys), pointer      :: cd(:)              => null()  !<
     real (kind=kind_phys), pointer      :: cd_ice(:)          => null()  !<
@@ -839,6 +842,9 @@ contains
     ! Tiedtke prognostic clouds
     if (Model%tiedtke_prog_clouds) then
       allocate (Interstitial%airdens       (IM,Model%levs))
+      allocate (Interstitial%ap            (IM,Model%levs))
+      allocate (Interstitial%ap_cld        (IM,Model%levs))
+      allocate (Interstitial%ap_clr        (IM,Model%levs))
       allocate (Interstitial%da_ls         (IM,Model%levs))
       allocate (Interstitial%dcond_ls_l    (IM,Model%levs))
       allocate (Interstitial%dcond_ls_i    (IM,Model%levs))
@@ -1495,6 +1501,9 @@ contains
     
     if (Model%tiedtke_prog_clouds) then
       Interstitial%airdens   = clear_val
+      Interstitial%ap        = clear_val
+      Interstitial%ap_cld    = clear_val
+      Interstitial%ap_clr    = clear_val
       Interstitial%da_ls     = clear_val
       Interstitial%dcond_ls_l= clear_val
       Interstitial%dcond_ls_i= clear_val
