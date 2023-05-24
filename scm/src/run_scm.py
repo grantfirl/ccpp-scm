@@ -9,7 +9,7 @@ import shutil
 import subprocess
 import sys
 import time
-from suite_info import suite_list
+from suite_info import suite, suite_list
 from netCDF4 import Dataset
 import importlib
 

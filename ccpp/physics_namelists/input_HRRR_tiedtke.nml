@@ -21,8 +21,8 @@
     dspheat = .true.
     effr_in = .true.
     fhcyc = 0
-    fhlwr = 1200.0
-    fhswr = 1200.0
+    fhlwr = 60.0
+    fhswr = 60.0
     fhzero = 1.0
     gwd_opt = 3
     h2o_phys = .true.
