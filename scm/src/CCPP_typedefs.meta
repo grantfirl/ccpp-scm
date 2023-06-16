@@ -119,6 +119,7 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [ap_cld]
   standard_name = cloudy_precipitation_area_fraction
   long_name = area covered by precipitation within clouds in the current level
@@ -126,6 +127,7 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [ap_clr]
   standard_name = clear_precipitation_area_fraction
   long_name = area covered by precipitation outside of clouds in the current level
@@ -133,6 +135,7 @@
   dimensions = (horizontal_loop_extent,vertical_layer_dimension)
   type = real
   kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [bexp1d]
   standard_name = perturbation_of_soil_type_b_parameter
   long_name = perturbation of soil type "b" parameter
