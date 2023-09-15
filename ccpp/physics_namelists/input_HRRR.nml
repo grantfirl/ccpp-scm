@@ -88,6 +88,8 @@
     ttendlim = -999
     use_ufo = .true.
     dt_inner     = 60
+    tiedtke_prog_clouds = .false.
+    sedi_semi = .false.
 /
 
 &cires_ugwp_nml

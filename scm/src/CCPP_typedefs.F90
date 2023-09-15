@@ -97,6 +97,7 @@ module CCPP_typedefs
     real (kind=kind_phys), pointer      :: cumabs(:)          => null()  !<
     real (kind=kind_phys), pointer      :: da_ls(:,:)         => null()
     real (kind=kind_phys), pointer      :: dcond_ls_l(:,:)    => null()
+    real (kind=kind_phys), pointer      :: dcond_ls(:,:)      => null()
     real (kind=kind_phys), pointer      :: dcond_ls_i(:,:)    => null()
     real (kind=kind_phys), pointer      :: d_eros(:,:)        => null()
     real (kind=kind_phys), pointer      :: d_eros_l(:,:)      => null()
@@ -839,6 +840,7 @@ contains
     if (Model%do_RRTMGP .or. Model%tiedtke_prog_clouds) then
       allocate (Interstitial%relhum               (IM, Model%levs))
     end if
+    allocate (Interstitial%dcond_ls     (IM,Model%levs))
     ! Tiedtke prognostic clouds
     if (Model%tiedtke_prog_clouds) then
       allocate (Interstitial%airdens       (IM,Model%levs))
@@ -1498,7 +1500,7 @@ contains
     else
       Interstitial%fullradar_diag = (Model%kdt == 1 .or. mod(Model%kdt, nint(Model%nsfullradar_diag/Model%dtp)) == 0) 
     end if
-    
+    Interstitial%dcond_ls= clear_val
     if (Model%tiedtke_prog_clouds) then
       Interstitial%airdens   = clear_val
       Interstitial%ap        = clear_val
