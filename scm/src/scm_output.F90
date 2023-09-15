@@ -189,9 +189,10 @@ subroutine output_init_state(ncid, time_inst_id, hor_dim_id, vert_dim_id, vert_d
   call NetCDF_def_var(ncid, 'ql', NF90_FLOAT, "suspended resolved liquid cloud water on model layer centers",        "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
   call NetCDF_def_var(ncid, 'qi', NF90_FLOAT, "suspended resolved ice cloud water on model layer centers",           "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
   call NetCDF_def_var(ncid, 'qc', NF90_FLOAT, "suspended (resolved + SGS) total cloud water on model layer centers", "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
-  if (physics%Model%tiedtke_prog_clouds) then
-    call NetCDF_def_var(ncid, 'qa', NF90_FLOAT, "prognostic cloud fraction on model layer centers", "fraction", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
-  end if
+  call NetCDF_def_var(ncid, 'qr', NF90_FLOAT, "suspended (resolved + SGS) total cloud water on model layer centers", "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
+  call NetCDF_def_var(ncid, 'nr', NF90_FLOAT, "suspended (resolved + SGS) total cloud water on model layer centers", "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
+  call NetCDF_def_var(ncid, 'dcond_ls', NF90_FLOAT, "suspended (resolved + SGS) total cloud water on model layer centers", "kg kg-1", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
+  call NetCDF_def_var(ncid, 'qa', NF90_FLOAT, "prognostic cloud fraction on model layer centers", "fraction", dummy_id, (/ hor_dim_id, vert_dim_id,   time_inst_id /))
   
 end subroutine output_init_state
 
@@ -556,6 +557,9 @@ subroutine output_append_state(ncid, scm_state, physics)
   call NetCDF_put_var(ncid, "u",       scm_state%state_u(:,:,1), scm_state%itt_out)
   call NetCDF_put_var(ncid, "v",       scm_state%state_v(:,:,1), scm_state%itt_out)
   call NetCDF_put_var(ncid, "ql",      scm_state%state_tracer(:,:,scm_state%cloud_water_index,1), scm_state%itt_out)
+  call NetCDF_put_var(ncid, "qr",      scm_state%state_tracer(:,:,scm_state%rain_index,1), scm_state%itt_out)
+  call NetCDF_put_var(ncid, "nr",      scm_state%state_tracer(:,:,scm_state%rain_nc_index,1), scm_state%itt_out)
+  call NetCDF_put_var(ncid, "dcond_ls",       physics%Interstitial%dcond_ls(:,:), scm_state%itt_out)
   call NetCDF_put_var(ncid, "qi",      scm_state%state_tracer(:,:,scm_state%cloud_ice_index,1), scm_state%itt_out)
   if (physics%model%do_mynnedmf) then
     call NetCDF_put_var(ncid, "qc",    scm_state%state_tracer(:,:,scm_state%cloud_water_index,1) + &
@@ -566,9 +570,7 @@ subroutine output_append_state(ncid, scm_state, physics)
                                        scm_state%state_tracer(:,:,scm_state%cloud_ice_index,1),    &
                                        scm_state%itt_out)
   endif
-  if (physics%Model%tiedtke_prog_clouds) then
-    call NetCDF_put_var(ncid, "qa",    scm_state%state_tracer(:,:,scm_state%cloud_amount_index,1), scm_state%itt_out)
-  endif
+  call NetCDF_put_var(ncid, "qa",    scm_state%state_tracer(:,:,scm_state%cloud_amount_index,1), scm_state%itt_out)
   
 end subroutine output_append_state
 
