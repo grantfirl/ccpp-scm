@@ -66,6 +66,7 @@
   cnvcld       = .true.
   imfshalcnv   = 2
   imfdeepcnv   = 2
+  progsigma    = .true.
   ras          = .false.
   cdmbgwd      = 0.14,1.8,1.0,1.0
   prslrd0      = 0.

@@ -196,7 +196,6 @@ module CCPP_typedefs
     integer,               pointer      :: idxday(:)          => null()  !<
     logical,               pointer      :: icy(:)             => null()  !<
     logical,               pointer      :: lake(:)            => null()  !<
-    logical,               pointer      :: use_flake(:)       => null()  !<
     logical,               pointer      :: ocean(:)           => null()  !<
     integer                             :: ipr                           !<
     integer,               pointer      :: islmsk(:)          => null()  !<
@@ -458,6 +457,9 @@ module CCPP_typedefs
     !-- 3D diagnostics
     integer :: rtg_ozone_index, rtg_tke_index
 
+    !-- CCPP suite simulator
+    real (kind=kind_phys), pointer      :: active_phys_tend(:,:,:) => null() ! tendencies for active physics process
+
     contains
 
       procedure :: create      => gfs_interstitial_create     !<   allocate array data
@@ -617,7 +619,6 @@ contains
     allocate (Interstitial%idxday          (IM))
     allocate (Interstitial%icy             (IM))
     allocate (Interstitial%lake            (IM))
-    allocate (Interstitial%use_flake       (IM))
     allocate (Interstitial%ocean           (IM))
     allocate (Interstitial%islmsk          (IM))
     allocate (Interstitial%islmsk_cice     (IM))
@@ -908,6 +909,13 @@ contains
     ! hardcoded value for calling GFDL MP in GFS_physics_driver.F90,
     ! which is set to .true.
     Interstitial%phys_hydrostatic = .true.
+
+    !
+    ! CCPP suite simulator
+    if (Model%do_ccpp_suite_sim) then
+       allocate (Interstitial%active_phys_tend(IM,Model%levs,Model%physics_process(1)%nprg_active))
+    endif
+
     !
     ! Reset all other variables
     call Interstitial%rad_reset (Model)
@@ -1342,7 +1350,6 @@ contains
     Interstitial%dry             = .false.
     Interstitial%icy             = .false.
     Interstitial%lake            = .false.
-    Interstitial%use_flake       = .false.
     Interstitial%ocean           = .false.
     Interstitial%islmsk          = 0
     Interstitial%islmsk_cice     = 0
@@ -1543,6 +1550,13 @@ contains
       Interstitial%U01       = clear_val
     end if
     !
+
+    !
+    ! CCPP suite simulator
+    if (Model%do_ccpp_suite_sim) then
+       Interstitial%active_phys_tend = clear_val
+    endif
+
   end subroutine gfs_interstitial_phys_reset
 
 end module CCPP_typedefs

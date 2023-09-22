@@ -22,6 +22,7 @@ VARIABLE_DEFINITION_FILES = [
     'ccpp/physics/physics/h2o_def.f',
     'ccpp/physics/physics/ozne_def.f',
     'ccpp/physics/physics/radiation_surface.f',
+    'ccpp/physics/physics/module_ccpp_suite_simulator.F90',
     'scm/src/CCPP_typedefs.F90',
     'scm/src/GFS_typedefs.F90',
     'scm/src/scm_kinds.F90',
@@ -67,6 +68,10 @@ TYPEDEFS_NEW_METADATA = {
     'scm_type_defs' : {
         'scm_type_defs' : '',
         'physics_type' : 'physics',
+        },
+    'module_ccpp_suite_simulator' : {
+        'base_physics_process' : '',
+        'module_ccpp_suite_simulator' : '',
         },
     }
 
@@ -147,9 +152,9 @@ SCHEME_FILES = [
     'ccpp/physics/physics/cu_gf_driver_pre.F90'             ,
     'ccpp/physics/physics/cu_gf_driver.F90'                 ,
     'ccpp/physics/physics/cu_gf_driver_post.F90'            ,
-    #'ccpp/physics/physics/cu_unified_driver_pre.F90'        ,
-    #'ccpp/physics/physics/cu_unified_driver.F90'            ,
-    #'ccpp/physics/physics/cu_unified_driver_post.F90'       ,
+    'ccpp/physics/physics/cu_c3_driver_pre.F90'             ,
+    'ccpp/physics/physics/cu_c3_driver.F90'                 ,
+    'ccpp/physics/physics/cu_c3_driver_post.F90'            ,
     'ccpp/physics/physics/hedmf.f'                          ,
     'ccpp/physics/physics/moninshoc.f'                      ,
     'ccpp/physics/physics/satmedmfvdif.F'                   ,
@@ -186,6 +191,7 @@ SCHEME_FILES = [
     'ccpp/physics/physics/lsm_noah.f'                       ,
     'ccpp/physics/physics/noahmpdrv.F90'                    ,
     'ccpp/physics/physics/flake_driver.F90'                 ,
+    'ccpp/physics/physics/clm_lake.f90'                     ,
     'ccpp/physics/physics/sfc_nst_pre.f'                    ,
     'ccpp/physics/physics/sfc_nst.f'                        ,
     'ccpp/physics/physics/sfc_nst_post.f'                   ,
@@ -208,7 +214,10 @@ SCHEME_FILES = [
     'ccpp/physics/physics/GFS_cloud_diagnostics.F90'        ,
     'ccpp/physics/physics/GFS_rrtmgp_cloud_mp.F90'          ,
     'ccpp/physics/physics/GFS_rrtmgp_cloud_overlap.F90'     ,
-    'ccpp/physics/physics/GFS_rrtmgp_post.F90'
+    'ccpp/physics/physics/GFS_rrtmgp_post.F90'              ,
+    # CCPP-SCM
+    'ccpp/physics/physics/GFS_ccpp_suite_sim_pre.F90'       ,
+    'ccpp/physics/physics/ccpp_suite_simulator.F90'
     ]
 
 # Default build dir, relative to current working directory,

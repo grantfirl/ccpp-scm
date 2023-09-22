@@ -64,8 +64,9 @@
   random_clds  = .false.
   trans_trac   = .true.
   cnvcld       = .true.
-  imfshalcnv   = 2
-  imfdeepcnv   = 2
+  imfshalcnv   = 5
+  imfdeepcnv   = 5
+  progsigma    = .true.
   ras          = .false.
   cdmbgwd      = 0.14,1.8,1.0,1.0
   prslrd0      = 0.

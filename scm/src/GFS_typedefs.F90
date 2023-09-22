@@ -6,6 +6,7 @@ module GFS_typedefs
    use module_radlw_parameters,  only: topflw_type, sfcflw_type
    use ozne_def,                 only: levozp, oz_coeff
    use h2o_def,                  only: levh2o, h2o_coeff
+   use module_ccpp_suite_simulator, only: base_physics_process
 
    implicit none
 
@@ -201,8 +202,26 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: slmsk  (:)   => null()  !< sea/land mask array (sea:0,land:1,sea-ice:2)
     real (kind=kind_phys), pointer :: oceanfrac(:) => null()  !< ocean fraction [0:1]
     real (kind=kind_phys), pointer :: landfrac(:)  => null()  !< land  fraction [0:1]
+
+!--- In (lakes)
     real (kind=kind_phys), pointer :: lakefrac(:)  => null()  !< lake  fraction [0:1]
     real (kind=kind_phys), pointer :: lakedepth(:) => null()  !< lake  depth [ m ]
+    real (kind=kind_phys), pointer :: clm_lakedepth(:) => null()  !< clm internal lake depth [ m ]
+    integer,               pointer :: use_lake_model(:) => null()!1=run lake, 2=run lake&nsst, 0=no lake
+    real (kind=kind_phys), pointer :: lake_t2m (:)   => null()  !< 2 meter temperature from CLM Lake model 
+    real (kind=kind_phys), pointer :: lake_q2m (:)   => null()  !< 2 meter humidity from CLM Lake model
+
+    real (kind=kind_phys), pointer :: h_ML(:)      => null()  !Mixed Layer depth of lakes [m]  
+    real (kind=kind_phys), pointer :: t_ML(:)      => null()  !Mixing layer temperature in K 
+    real (kind=kind_phys), pointer :: t_mnw(:)     => null()  !Mean temperature of the water column [K] 
+    real (kind=kind_phys), pointer :: h_talb(:)    => null()  !the thermally active layer depth of the bottom sediments [m] 
+    real (kind=kind_phys), pointer :: t_talb(:)    => null()  !Temperature at the bottom of the sediment upper layer [K]  
+    real (kind=kind_phys), pointer :: t_bot1(:)    => null()  !Temperature at the water-bottom sediment interface [K] 
+    real (kind=kind_phys), pointer :: t_bot2(:)    => null()  !Temperature for bottom layer of water [K]
+    real (kind=kind_phys), pointer :: c_t(:)       => null()  !Shape factor of water temperature vertical profile 
+    real (kind=kind_phys), pointer :: T_snow(:)    => null()  !temperature of snow on a lake [K] 
+    real (kind=kind_phys), pointer :: T_ice(:)     => null()  !temperature of ice on a lake [K] 
+
     real (kind=kind_phys), pointer :: tsfc   (:)   => null()  !< surface air temperature in K
     real (kind=kind_phys), pointer :: vegtype_frac (:,:) => null()  !< fractions [0:1] of veg. categories
     real (kind=kind_phys), pointer :: soiltype_frac(:,:) => null()  !< fractions [0:1] of soil categories
@@ -401,6 +420,36 @@ module GFS_typedefs
     real (kind=kind_phys), pointer :: dsnowprv   (:)    => null()  !< snow precipitation rate from previous timestep
     real (kind=kind_phys), pointer :: dgraupelprv(:)    => null()  !< graupel precipitation rate from previous timestep
 
+    ! CLM Lake model internal variables:
+    real (kind=kind_phys), pointer :: lake_albedo(:)     => null()  !
+    real (kind=kind_phys), pointer :: lake_z3d(:,:)     => null()  !
+    real (kind=kind_phys), pointer :: lake_dz3d(:,:)    => null()  !
+    real (kind=kind_phys), pointer :: lake_soil_watsat3d(:,:) => null()  !
+    real (kind=kind_phys), pointer :: lake_csol3d(:,:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_soil_tkmg3d(:,:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_soil_tkdry3d(:,:)  => null()  !
+    real (kind=kind_phys), pointer :: lake_soil_tksatu3d(:,:) => null()  !
+    real (kind=kind_phys), pointer :: lake_h2osno2d(:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_sndpth2d(:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_snl2d(:)      => null()  !
+    real (kind=kind_phys), pointer :: lake_snow_z3d(:,:)      => null()  !
+    real (kind=kind_phys), pointer :: lake_snow_dz3d(:,:)     => null()  !
+    real (kind=kind_phys), pointer :: lake_snow_zi3d(:,:)     => null()  !
+    real (kind=kind_phys), pointer :: lake_h2osoi_vol3d(:,:)  => null()  !
+    real (kind=kind_phys), pointer :: lake_h2osoi_liq3d(:,:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_h2osoi_ice3d(:,:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_tsfc(:)   => null()  !
+    real (kind=kind_phys), pointer :: lake_t_soisno3d(:,:) => null()  !
+    real (kind=kind_phys), pointer :: lake_t_lake3d(:,:) => null()  !
+    real (kind=kind_phys), pointer :: lake_savedtke12d(:)=> null()  !
+    real (kind=kind_phys), pointer :: lake_icefrac3d(:,:)=> null()
+    real (kind=kind_phys), pointer :: lake_rho0(:)=> null()
+    real (kind=kind_phys), pointer :: lake_ht(:)=> null()
+    real (kind=kind_phys), pointer :: lake_clay3d(:,:) => null()
+    real (kind=kind_phys), pointer :: lake_sand3d(:,:) => null()
+    integer, pointer :: lake_is_salty(:) => null()
+    integer, pointer :: lake_cannot_freeze(:) => null()
+    real (kind=kind_phys), pointer :: clm_lake_initialized(:) => null() !< lakeini was called
     !--- aerosol surface emissions for Thompson microphysics & smoke dust
     real (kind=kind_phys), pointer :: emdust  (:)     => null()  !< instantaneous dust emission
     real (kind=kind_phys), pointer :: emseas  (:)     => null()  !< instantaneous sea salt emission
@@ -914,8 +963,8 @@ module GFS_typedefs
     real(kind=kind_phys) :: nssl_alphah    !<  graupel shape parameter
     real(kind=kind_phys) :: nssl_alphahl   !<  hail shape parameter
     real(kind=kind_phys) :: nssl_alphar  ! shape parameter for rain (imurain=1 only)                         
-    real(kind=kind_phys) :: nssl_ehw0_in ! constant or max assumed graupel-droplet collection efficiency   
-    real(kind=kind_phys) :: nssl_ehlw0_in! constant or max assumed hail-droplet collection efficiency   
+    real(kind=kind_phys) :: nssl_ehw0    ! constant or max assumed graupel-droplet collection efficiency   
+    real(kind=kind_phys) :: nssl_ehlw0   ! constant or max assumed hail-droplet collection efficiency   
     logical              :: nssl_hail_on   !<  NSSL flag to activate the hail category
     logical              :: nssl_ccn_on    !<  NSSL flag to activate the CCN category
     logical              :: nssl_invertccn !<  NSSL flag to treat CCN as activated (true) or unactivated (false)
@@ -1046,8 +1095,24 @@ module GFS_typedefs
     integer              :: ntsflg          !< flag for updating skin temperature in the GFDL surface layer scheme
     real(kind=kind_phys) :: sfenth          !< enthalpy flux factor 0 zot via charnock ..>0 zot enhanced>15m/s
 
-!--- flake model parameters
-    integer              :: lkm             !< flag for flake model
+!--- lake model parameters
+    integer              :: lkm             !< =0 no lake, =1 lake, =2 lake&nsst
+    integer              :: iopt_lake       !< =1 flake, =2 clm lake
+    integer              :: iopt_lake_flake = 1
+    integer              :: iopt_lake_clm = 2
+    real(kind_phys)      :: lakedepth_threshold !< lakedepth must be GREATER than this value to enable a lake model
+    real(kind_phys)      :: lakefrac_threshold  !< lakefrac must be GREATER than this value to enable a lake model
+    logical              :: use_lake2m      !< use 2m T & Q calculated by the lake model
+
+!--- clm lake model parameters
+    integer              :: nlevlake_clm_lake !< Number of lake levels for clm lake model
+    integer              :: nlevsoil_clm_lake !< Number of soil levels for clm lake model
+    integer              :: nlevsnow_clm_lake !< Number of snow levels for clm lake model
+    integer              :: nlevsnowsoil_clm_lake !< -nlevsnow:nlevsoil dimensioned variables
+    integer              :: nlevsnowsoil1_clm_lake !< -nlevsnow+1:nlevsoil dimensioned variables
+    real(kind_phys)      :: clm_lake_depth_default !< minimum lake elevation in clm lake model
+    logical              :: clm_lake_use_lakedepth !< initialize lake from lakedepth
+    logical              :: clm_lake_debug !< verbose debugging in clm_lake
 
 !--- tuning parameters for physical parameterizations
     logical              :: ras             !< flag for ras convection scheme
@@ -1117,7 +1182,7 @@ module GFS_typedefs
     integer              :: imfshalcnv_samf     = 2 !< flag for SAMF scale- & aerosol-aware mass-flux shallow convection scheme
     integer              :: imfshalcnv_gf       = 3 !< flag for scale- & aerosol-aware Grell-Freitas scheme (GSD)
     integer              :: imfshalcnv_ntiedtke = 4 !< flag for new Tiedtke scheme (CAPS)
-    integer              :: imfshalcnv_unified  = 5 !< flag for the unified convection scheme
+    integer              :: imfshalcnv_c3       = 5 !< flag for the Community Convective Cloud (C3) scheme
     logical              :: hwrf_samfdeep           !< flag for HWRF SAMF deepcnv scheme (HWRF)
     logical              :: progsigma               !< flag for prognostic area fraction in samf ddepcnv scheme (GFS)   
     integer              :: imfdeepcnv      !< flag for mass-flux deep convection scheme
@@ -1131,13 +1196,16 @@ module GFS_typedefs
     integer              :: imfdeepcnv_samf     = 2 !< flag for SAMF scale- & aerosol-aware mass-flux deep convection scheme
     integer              :: imfdeepcnv_gf       = 3 !< flag for scale- & aerosol-aware Grell-Freitas scheme (GSD)
     integer              :: imfdeepcnv_ntiedtke = 4 !< flag for new Tiedtke scheme (CAPS)
-    integer              :: imfdeepcnv_unified  = 5 !< flag for the unified convection scheme
+    integer              :: imfdeepcnv_c3       = 5 !< flag for the Community Convective Cloud (C3) scheme
     logical              :: hwrf_samfshal           !< flag for HWRF SAMF shalcnv scheme (HWRF)
     integer              :: isatmedmf       !< flag for scale-aware TKE-based moist edmf scheme
                                             !<     0: initial version of satmedmf (Nov. 2018)
                                             !<     1: updated version of satmedmf (as of May 2019)
     integer              :: isatmedmf_vdif  = 0 !< flag for initial version of satmedmf (Nov. 2018)
     integer              :: isatmedmf_vdifq = 1 !< flag for updated version of satmedmf (as of May 2019)
+    integer              :: ichoice         = 0 !< flag for closure of C3/GF deep convection
+    integer              :: ichoicem        = 13!< flag for closure of C3/GF mid convection
+    integer              :: ichoice_s       = 3 !< flag for closure of C3/GF shallow convection
 
     integer              :: nmtvr           !< number of topographic variables such as variance etc
                                             !< used in the GWD parameterization - 10 more added if
@@ -1242,6 +1310,7 @@ module GFS_typedefs
                                             !< nstf_name(5) : zsea2 in mm
 !--- fractional grid
     logical              :: frac_grid       !< flag for fractional grid
+    logical              :: frac_ice        !< flag for fractional ice when fractional grid is not in use
     logical              :: ignore_lake     !< flag for ignoring lakes
     real(kind=kind_phys) :: min_lakeice     !< minimum lake ice value
     real(kind=kind_phys) :: min_seaice      !< minimum sea  ice value
@@ -1531,6 +1600,20 @@ module GFS_typedefs
 
 !--- lightning threat and diagsnostics
     logical              :: lightning_threat !< report lightning threat indices
+
+!--- CCPP suite simulator
+    logical                                :: do_ccpp_suite_sim  !
+    integer                                :: nphys_proc          !
+    integer                                :: proc_start          !
+    integer                                :: proc_end            !
+    logical                                :: in_pre_active       !
+    logical                                :: in_post_active      !
+    type(base_physics_process),allocatable :: physics_process(:)  !
+    integer                                :: nprg_active         !
+    integer                                :: iactive_T           !
+    integer                                :: iactive_u           !
+    integer                                :: iactive_v           !
+    integer                                :: iactive_q           !
 
     contains
       procedure :: init            => control_initialize
@@ -2197,6 +2280,26 @@ module GFS_typedefs
     allocate (Sfcprop%soiltype_frac(IM,Model%nsoilcat))
     allocate (Sfcprop%lakefrac (IM))
     allocate (Sfcprop%lakedepth(IM))
+
+    allocate (Sfcprop%use_lake_model(IM))
+
+    if(Model%lkm > 0) then
+      if(Model%iopt_lake==Model%iopt_lake_clm) then
+        allocate (Sfcprop%clm_lakedepth(IM))
+      else if(Model%iopt_lake==Model%iopt_lake_flake) then
+        allocate (Sfcprop%h_ML     (IM))
+        allocate (Sfcprop%t_ML     (IM))
+        allocate (Sfcprop%t_mnw    (IM))
+        allocate (Sfcprop%h_talb   (IM))
+        allocate (Sfcprop%t_talb   (IM))
+        allocate (Sfcprop%t_bot1   (IM))
+        allocate (Sfcprop%t_bot2   (IM))
+        allocate (Sfcprop%c_t      (IM))
+      endif
+      allocate (Sfcprop%T_snow   (IM))
+      allocate (Sfcprop%T_ice    (IM))
+    endif
+
     allocate (Sfcprop%tsfc     (IM))
     allocate (Sfcprop%tsfco    (IM))
     allocate (Sfcprop%tsfcl    (IM))
@@ -2234,6 +2337,25 @@ module GFS_typedefs
     Sfcprop%soiltype_frac = clear_val
     Sfcprop%lakefrac  = clear_val
     Sfcprop%lakedepth = clear_val
+
+    Sfcprop%use_lake_model = zero
+    if(Model%lkm > 0) then
+      if(Model%iopt_lake==Model%iopt_lake_clm) then
+        Sfcprop%clm_lakedepth = clear_val
+      else if(Model%iopt_lake==Model%iopt_lake_flake) then
+        Sfcprop%h_ML      = clear_val
+        Sfcprop%t_ML      = clear_val
+        Sfcprop%t_mnw     = clear_val
+        Sfcprop%h_talb    = clear_val
+        Sfcprop%t_talb    = clear_val
+        Sfcprop%t_bot1    = clear_val
+        Sfcprop%t_bot2    = clear_val
+        Sfcprop%c_t       = clear_val
+      endif
+      Sfcprop%T_snow    = clear_val
+      Sfcprop%T_ice     = clear_val
+    endif
+
     Sfcprop%tsfc      = clear_val
     Sfcprop%tsfco     = clear_val
     Sfcprop%tsfcl     = clear_val
@@ -2425,18 +2547,21 @@ module GFS_typedefs
       Sfcprop%xlaixy     = clear_val
       Sfcprop%rca        = clear_val
     end if
-    if (Model%lsm == Model%lsm_ruc .or. Model%lsm == Model%lsm_noahmp) then
-      allocate(Sfcprop%raincprv  (IM))
-      allocate(Sfcprop%rainncprv (IM))
+    if (Model%lsm == Model%lsm_ruc .or. Model%lsm == Model%lsm_noahmp .or. &
+         (Model%lkm>0 .and. Model%iopt_lake==Model%iopt_lake_clm)) then
+     allocate(Sfcprop%raincprv  (IM))
+     allocate(Sfcprop%rainncprv (IM))
+     Sfcprop%raincprv   = clear_val
+     Sfcprop%rainncprv  = clear_val
+     if (Model%lsm == Model%lsm_ruc .or. Model%lsm == Model%lsm_noahmp) then
       allocate(Sfcprop%iceprv    (IM))
       allocate(Sfcprop%snowprv   (IM))
       allocate(Sfcprop%graupelprv(IM))
 
-      Sfcprop%raincprv   = clear_val
-      Sfcprop%rainncprv  = clear_val
       Sfcprop%iceprv     = clear_val
       Sfcprop%snowprv    = clear_val
       Sfcprop%graupelprv = clear_val
+     end if
     end if
 ! Noah MP allocate and init when used
 !
@@ -2603,7 +2728,7 @@ module GFS_typedefs
        Sfcprop%cqs2        = clear_val
        Sfcprop%lh          = clear_val
     end if
-    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_unified) then
+    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_c3) then
         allocate (Sfcprop%maxupmf(IM))
         allocate (Sfcprop%conv_act(IM))
         allocate (Sfcprop%conv_act_m(IM))
@@ -2611,6 +2736,73 @@ module GFS_typedefs
         Sfcprop%conv_act = zero
         Sfcprop%conv_act_m = zero
     end if
+
+    ! CLM Lake Model variables
+    if (Model%lkm/=0 .and. Model%iopt_lake==Model%iopt_lake_clm) then
+       allocate(Sfcprop%lake_t2m(IM))
+       allocate(Sfcprop%lake_q2m(IM))
+       allocate(Sfcprop%lake_albedo(IM))
+       allocate(Sfcprop%lake_z3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_dz3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_soil_watsat3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_csol3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_soil_tkmg3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_soil_tkdry3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_soil_tksatu3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_h2osno2d(IM))
+       allocate(Sfcprop%lake_sndpth2d(IM))
+       allocate(Sfcprop%lake_snl2d(IM))
+       allocate(Sfcprop%lake_snow_z3d(IM,Model%nlevsnowsoil1_clm_lake))
+       allocate(Sfcprop%lake_snow_dz3d(IM,Model%nlevsnowsoil1_clm_lake))
+       allocate(Sfcprop%lake_snow_zi3d(IM,Model%nlevsnowsoil_clm_lake))
+       allocate(Sfcprop%lake_h2osoi_vol3d(IM,Model%nlevsnowsoil1_clm_lake))
+       allocate(Sfcprop%lake_h2osoi_liq3d(IM,Model%nlevsnowsoil1_clm_lake))
+       allocate(Sfcprop%lake_h2osoi_ice3d(IM,Model%nlevsnowsoil1_clm_lake))
+       allocate(Sfcprop%lake_tsfc(IM))
+       allocate(Sfcprop%lake_t_soisno3d(IM,Model%nlevsnowsoil1_clm_lake))
+       allocate(Sfcprop%lake_t_lake3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_savedtke12d(IM))
+       allocate(Sfcprop%lake_icefrac3d(IM,Model%nlevlake_clm_lake))
+       allocate(Sfcprop%lake_rho0(IM))
+       allocate(Sfcprop%lake_ht(IM))
+       allocate(Sfcprop%lake_clay3d(IM,Model%nlevsoil_clm_lake))
+       allocate(Sfcprop%lake_sand3d(IM,Model%nlevsoil_clm_lake))
+       allocate(Sfcprop%lake_is_salty(IM))
+       allocate(Sfcprop%lake_cannot_freeze(IM))
+       allocate(Sfcprop%clm_lake_initialized(IM))
+
+       Sfcprop%lake_t2m = clear_val
+       Sfcprop%lake_q2m = clear_val
+       Sfcprop%lake_albedo = clear_val
+       Sfcprop%lake_z3d = clear_val
+       Sfcprop%lake_dz3d = clear_val
+       Sfcprop%lake_soil_watsat3d = clear_val
+       Sfcprop%lake_csol3d = clear_val
+       Sfcprop%lake_soil_tkmg3d = clear_val
+       Sfcprop%lake_soil_tkdry3d = clear_val
+       Sfcprop%lake_soil_tksatu3d = clear_val
+       Sfcprop%lake_h2osno2d = clear_val
+       Sfcprop%lake_sndpth2d = clear_val
+       Sfcprop%lake_snl2d = clear_val
+       Sfcprop%lake_snow_z3d = clear_val
+       Sfcprop%lake_snow_dz3d = clear_val
+       Sfcprop%lake_snow_zi3d = clear_val
+       Sfcprop%lake_h2osoi_vol3d = clear_val
+       Sfcprop%lake_h2osoi_liq3d = clear_val
+       Sfcprop%lake_h2osoi_ice3d = clear_val
+       Sfcprop%lake_tsfc = clear_val
+       Sfcprop%lake_t_soisno3d = clear_val
+       Sfcprop%lake_t_lake3d = clear_val
+       Sfcprop%lake_savedtke12d = clear_val
+       Sfcprop%lake_icefrac3d = clear_val
+       Sfcprop%lake_rho0 = -111
+       Sfcprop%lake_ht = -111
+       Sfcprop%lake_clay3d = clear_val
+       Sfcprop%lake_sand3d = clear_val
+       Sfcprop%lake_is_salty = zero
+       Sfcprop%lake_cannot_freeze = zero
+       Sfcprop%clm_lake_initialized = zero
+    endif
 
     if(Model%rrfs_sd) then
     !--- needed for smoke aerosol option
@@ -2988,7 +3180,7 @@ module GFS_typedefs
       Coupling%rrfs_hwp   = clear_val
     endif
 
-    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_unified) then
+    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_c3) then
       allocate (Coupling%qci_conv (IM,Model%levs))
       Coupling%qci_conv   = clear_val
     endif
@@ -3012,6 +3204,7 @@ module GFS_typedefs
     use physcons,         only: con_rerth, con_pi, con_p0, rhowater
     use mersenne_twister, only: random_setseed, random_number
     use parse_tracers,    only: get_tracer_index
+    use GFS_ccpp_suite_sim_pre, only: load_ccpp_suite_sim
 !
     implicit none
 
@@ -3264,8 +3457,8 @@ module GFS_typedefs
     real(kind=kind_phys) :: nssl_alphah     = 0.0               !<  graupel shape parameter
     real(kind=kind_phys) :: nssl_alphahl    = 1.0               !<  hail shape parameter
     real(kind=kind_phys) :: nssl_alphar     = 0.0               ! shape parameter for rain (imurain=1 only)  
-    real(kind=kind_phys) :: nssl_ehw0_in    = 0.9               ! constant or max assumed graupel-droplet collection efficiency  
-    real(kind=kind_phys) :: nssl_ehlw0_in   = 0.9               ! constant or max assumed hail-droplet collection efficiency  
+    real(kind=kind_phys) :: nssl_ehw0       = 0.9               ! constant or max assumed graupel-droplet collection efficiency  
+    real(kind=kind_phys) :: nssl_ehlw0      = 0.9               ! constant or max assumed hail-droplet collection efficiency  
     logical              :: nssl_hail_on    = .false.           !<  NSSL flag to activate the hail category
     logical              :: nssl_ccn_on     = .true.            !<  NSSL flag to activate the CCN category
     logical              :: nssl_invertccn  = .true.            !<  NSSL flag to treat CCN as activated (true) or unactivated (false)
@@ -3286,7 +3479,7 @@ module GFS_typedefs
 
     !--- Thompson,GFDL microphysical parameter
     logical              :: lrefres        = .false.            !< flag for radar reflectivity in restart file
-    
+
     !--- Ferrier-Aligo microphysics and Tiedtke prognostic clouds
     real(kind=kind_phys) :: rhgrd          = 1.0                !< 1.0 for fer_hires microphysics; for 3-km domain; 0.8 for Tiedtke prognostic clouds
     
@@ -3330,6 +3523,18 @@ module GFS_typedefs
     logical              :: do_rk_microphys      = .false. !(check) from lscloud_driver.F90 in AM4
     logical              :: total_activation     = .false. !(check) from lscloud_driver.F90 in AM4
     
+    !--- CLM Lake Model parameters (MUST match clm_lake.F90)
+    integer, parameter   :: nlevlake_clm_lake = 10           !< number of lake levels
+    integer, parameter   :: nlevsoil_clm_lake = 10           !< number of soil levels
+    integer, parameter   :: nlevsnow_clm_lake = 5            !< number of snow levels
+    integer, parameter   :: nlevsnowsoil_clm_lake = nlevsnow_clm_lake+nlevsoil_clm_lake+1 !< -nlevsno:nlevsoil dimensioned variables
+    integer, parameter   :: nlevsnowsoil1_clm_lake = nlevsnow_clm_lake+nlevsoil_clm_lake !< -nlevsno+1:nlevsoil dimensioned variables
+
+    !--- CLM Lake configurables
+    real(kind_phys)      :: clm_lake_depth_default = 50         !< default lake depth in clm lake model
+    logical              :: clm_lake_use_lakedepth = .true.     !< initialize depth from lakedepth
+    logical              :: clm_lake_debug = .false.            !< verbose debugging in clm_lake
+
     !--- land/surface model parameters
     integer              :: lsm            =  1              !< flag for land surface model to use =0  for osu lsm; =1  for noah lsm; =2  for noah mp lsm; =3  for RUC lsm
     integer              :: lsoil          =  4              !< number of soil layers
@@ -3383,7 +3588,11 @@ module GFS_typedefs
     real(kind=kind_phys) :: sfenth         = 0.0                      !< enthalpy flux factor 0 zot via charnock ..>0 zot enhanced>15m/s
 
 !--- flake model parameters
-    integer              :: lkm            =  0                       !< flag for flake model - default no flake
+    integer              :: lkm            =  0                       !< =1 run lake, =2 run lake&nsst =0 no lake
+    integer              :: iopt_lake      =  2                       !< =1 flake, =2 clm lake (default)
+    real(kind_phys)      :: lakedepth_threshold = 1.0                 !< lakedepth must be GREATER than this value to enable a lake model
+    real(kind_phys)      :: lakefrac_threshold  = 0.0                 !< lakefrac must be GREATER than this value to enable a lake model
+    logical              :: use_lake2m     = .false.                  !< use 2m T & Q from clm lake model
 
 !--- tuning parameters for physical parameterizations
     logical              :: ras            = .false.                  !< flag for ras convection scheme
@@ -3569,6 +3778,7 @@ module GFS_typedefs
                                                              !< nstf_name(5) : zsea2 in mm
 !--- fractional grid
     logical              :: frac_grid       = .false.         !< flag for fractional grid
+    logical              :: frac_ice        = .false.         !< flag for fractional ice when fractional grid is not in use
     logical              :: ignore_lake     = .true.          !< flag for ignoring lakes
     real(kind=kind_phys) :: min_lakeice     = 0.15d0          !< minimum lake ice value
     real(kind=kind_phys) :: min_seaice      = 1.0d-11         !< minimum sea  ice value
@@ -3677,6 +3887,10 @@ module GFS_typedefs
     integer :: spp_gwd      =  0
     logical :: do_spp       = .false.
 
+    integer              :: ichoice         = 0 !< flag for closure of C3/GF deep convection
+    integer              :: ichoicem        = 13!< flag for closure of C3/GF mid convection
+    integer              :: ichoice_s       = 3 !< flag for closure of C3/GF shallow convection
+
 !-- chem nml variables for RRFS-SD
     real(kind=kind_phys) :: dust_alpha = 0.
     real(kind=kind_phys) :: dust_gamma = 0.
@@ -3699,6 +3913,19 @@ module GFS_typedefs
 
 !-- Lightning threat index
     logical :: lightning_threat = .false.
+
+!--- CCPP suite simulator
+    logical            :: do_ccpp_suite_sim  = .false.
+    integer            :: nphys_proc         = 0
+    integer            :: proc_start         = 0
+    integer            :: proc_end           = 0
+    logical            :: in_pre_active      = .false.
+    logical            :: in_post_active     = .false.
+    integer            :: nprg_active        = 0
+    integer            :: iactive_T          = 0
+    integer            :: iactive_u          = 0
+    integer            :: iactive_v          = 0
+    integer            :: iactive_q          = 0
 
 !--- aerosol scavenging factors
     integer, parameter :: max_scav_factors = 183
@@ -3754,7 +3981,7 @@ module GFS_typedefs
                                ext_diag_thompson, dt_inner, lgfdlmprad,                     &
                                sedi_semi, decfl,                                            &
                                nssl_cccn, nssl_alphah, nssl_alphahl,                        &
-                               nssl_alphar, nssl_ehw0_in, nssl_ehlw0_in,                    &
+                               nssl_alphar, nssl_ehw0, nssl_ehlw0,                          &
                                nssl_invertccn, nssl_hail_on, nssl_ccn_on,                   &
                           !--- max hourly
                                avg_max_length,                                              &
@@ -3771,7 +3998,9 @@ module GFS_typedefs
                           !    GFDL surface layer options
                                lcurr_sf, pert_cd, ntsflg, sfenth,                           &
                           !--- lake model control
-                               lkm,                                                         &
+                               lkm, iopt_lake, lakedepth_threshold, lakefrac_threshold,     &
+                               clm_lake_depth_default, clm_lake_use_lakedepth,              &
+                               clm_lake_debug, use_lake2m,                                  &
                           !--- physical parameterizations
                                ras, trans_trac, old_monin, cnvgwd, mstrat, moist_adj,       &
                                cscnv, cal_pre, do_aw, do_shoc, shocaftcnv, shoc_cld,        &
@@ -3814,7 +4043,7 @@ module GFS_typedefs
                           !--- near surface sea temperature model
                                nst_anl, lsea, nstf_name,                                    &
                                frac_grid, min_lakeice, min_seaice, min_lake_height,         &
-                               ignore_lake,                                                 &
+                               ignore_lake, frac_ice,                                       &
                           !--- surface layer
                                sfc_z0_type,                                                 &
                           !--- switch beteeen local and standard potential temperature
@@ -3847,13 +4076,17 @@ module GFS_typedefs
                                wetdep_ls_opt, smoke_forecast, aero_ind_fdb, aero_dir_fdb,   &
                                rrfs_smoke_debug, do_plumerise, plumerisefire_frq,           &
                                addsmoke_flag, enh_mix, mix_chem, smoke_dir_fdb_coef,        &
+                          !--- C3/GF closures
+                               ichoice,ichoicem,ichoice_s,                                  &
                           !--- (DFI) time ranges with radar-prescribed microphysics tendencies
                           !          and (maybe) convection suppression
                                fh_dfi_radar, radar_tten_limits, do_cap_suppress,            &
                           !--- Tiedtke prognostic clouds
                                tiedtke_prog_clouds,                                         &
                           !--- GSL lightning threat indices
-                               lightning_threat
+                               lightning_threat,                                            &
+                          !--- CCPP suite simulator
+                               do_ccpp_suite_sim
 
 !--- other parameters
     integer :: nctp    =  0                !< number of cloud types in CS scheme
@@ -3870,6 +4103,10 @@ module GFS_typedefs
     logical :: have_pbl, have_dcnv, have_scnv, have_mp, have_macro, have_oz_phys, have_samf, have_pbl_edmf, have_cnvtrans, have_rdamp
     character(len=20) :: namestr
     character(len=44) :: descstr
+
+!--- CCPP suite simulator
+    integer :: ncid, dimID, varID, status, ntime_sim_data, nlev_sim_data, errflg
+    character(len=256) :: errmsg
 
     ! dtend selection: default is to match all variables:
     dtend_select(1)='*'
@@ -3929,6 +4166,33 @@ module GFS_typedefs
 
     Model%lightning_threat = lightning_threat
 
+!--- CCPP suite simulator
+    Model%do_ccpp_suite_sim = do_ccpp_suite_sim
+    if (Model%do_ccpp_suite_sim) then
+       call load_ccpp_suite_sim(Model%nlunit, Model%fn_nml, Model%physics_process, &
+            Model%iactive_T, Model%iactive_u, Model%iactive_v, Model%iactive_q, errmsg, errflg)
+
+       if (errflg == 0) then
+          write(0,*) 'Using CCPP suite simulator'
+          Model%nphys_proc  = size(Model%physics_process)
+          Model%nprg_active = Model%physics_process(1)%nprg_active
+          if (Model%physics_process(1)%iactive_scheme == 1) then
+             Model%in_post_active = .true.
+          else
+             Model%in_pre_active = .true.
+          endif
+       else
+          write(0,*) 'CCPP suite simulator turned on, but error encountered loading data.'
+          write(0,*) errmsg
+          stop
+       endif
+       if(.not. qdiag3d .and. .not. ldiag3d) then
+          write(0,*) 'CCPP suite simulator turned on, but qdiag3d and/or ldiag3d are not set to .true.'
+          write(0,*) errmsg
+          stop
+       endif
+    endif
+
     Model%fh_dfi_radar     = fh_dfi_radar
     Model%num_dfi_radar    = 0
     Model%dfi_radar_max_intervals = dfi_radar_max_intervals ! module-level parameter, top of file
@@ -3977,17 +4241,17 @@ module GFS_typedefs
       write(*,*) 'NO FLAG: pbl is generic'
     endif
 
-    if(imfshalcnv == Model%imfshalcnv_gf .or. imfshalcnv == Model%imfshalcnv_unified) then
+    if(imfshalcnv == Model%imfshalcnv_gf .or. imfshalcnv == Model%imfshalcnv_c3) then
       if(me==master) &
-           write(*,*) 'FLAG: imfshalcnv_gf or imfshalcnv_unified so scnv not generic'
+           write(*,*) 'FLAG: imfshalcnv_gf or imfshalcnv_c3 so scnv not generic'
       Model%flag_for_scnv_generic_tend=.false.
     elseif(me==master) then
       write(*,*) 'NO FLAG: scnv is generic'
     endif
 
-    if(imfdeepcnv == Model%imfdeepcnv_gf .or. imfdeepcnv == Model%imfdeepcnv_unified) then
+    if(imfdeepcnv == Model%imfdeepcnv_gf .or. imfdeepcnv == Model%imfdeepcnv_c3) then
       if(me==master) &
-           write(*,*) 'FLAG: imfdeepcnv_gf or imfdeepcnv_unified so dcnv not generic'
+           write(*,*) 'FLAG: imfdeepcnv_gf or imfdeepcnv_c3 so dcnv not generic'
       Model%flag_for_dcnv_generic_tend=.false.
     elseif(me==master) then
       write(*,*) 'NO FLAG: dcnv is generic'
@@ -4097,6 +4361,10 @@ module GFS_typedefs
     Model%smoke_dir_fdb_coef  = smoke_dir_fdb_coef
 
     Model%fire_aux_data_levels = 10
+
+    Model%ichoice_s = ichoice_s
+    Model%ichoicem  = ichoicem
+    Model%ichoice   = ichoice
 
 !--- integrated dynamics through earth's atmosphere
     Model%lsidea           = lsidea
@@ -4362,8 +4630,8 @@ module GFS_typedefs
     Model%nssl_alphah      = nssl_alphah
     Model%nssl_alphahl     = nssl_alphahl
     Model%nssl_alphar      = nssl_alphar
-    Model%nssl_ehw0_in     = nssl_ehw0_in
-    Model%nssl_ehlw0_in    = nssl_ehlw0_in
+    Model%nssl_ehw0        = nssl_ehw0
+    Model%nssl_ehlw0       = nssl_ehlw0
     Model%nssl_hail_on     = nssl_hail_on
     Model%nssl_ccn_on      = nssl_ccn_on
     Model%nssl_invertccn   = nssl_invertccn
@@ -4537,8 +4805,22 @@ module GFS_typedefs
     Model%ntsflg           = ntsflg
     Model%sfenth           = sfenth
 
-!--- flake  model parameters
+!--- lake  model parameters
     Model%lkm              = lkm
+    Model%iopt_lake        = iopt_lake
+    Model%use_lake2m       = use_lake2m
+    Model%lakedepth_threshold = lakedepth_threshold
+    Model%lakefrac_threshold = lakefrac_threshold
+
+!--- clm lake model parameters
+    Model%nlevlake_clm_lake = nlevlake_clm_lake
+    Model%nlevsoil_clm_lake = nlevsoil_clm_lake
+    Model%nlevsnow_clm_lake = nlevsnow_clm_lake
+    Model%nlevsnowsoil_clm_lake = nlevsnowsoil_clm_lake
+    Model%nlevsnowsoil1_clm_lake = nlevsnowsoil1_clm_lake
+    Model%clm_lake_depth_default = clm_lake_depth_default
+    Model%clm_lake_use_lakedepth = clm_lake_use_lakedepth
+    Model%clm_lake_debug = clm_lake_debug
 
 ! Noah MP options from namelist
 !
@@ -4743,6 +5025,7 @@ module GFS_typedefs
 
 !--- fractional grid
     Model%frac_grid        = frac_grid
+    Model%frac_ice         = frac_ice
     Model%ignore_lake      = ignore_lake
     Model%min_lakeice      = min_lakeice
     Model%min_seaice       = min_seaice
@@ -4975,6 +5258,18 @@ module GFS_typedefs
       Model%ntocb = get_tracer_index(Model%tracer_names, 'oc1',   Model%me, Model%master, Model%debug)
       Model%ntocl = get_tracer_index(Model%tracer_names, 'oc2',   Model%me, Model%master, Model%debug)
     end if
+
+    ! Lake & fractional grid safety checks
+    if(Model%me==Model%master) then
+      if(Model%lkm>0 .and. Model%frac_grid) then
+        write(0,*) 'WARNING: Lake fractional grid support is experimental. Use at your own risk!'
+      else if(Model%lkm>0 .and. Model%iopt_lake==Model%iopt_lake_clm .and. .not. Model%frac_ice) then
+        write(0,*) 'WARNING: CLM Lake Model will not work without frac_ice=.true.'
+      endif
+      if(Model%lkm==2) then
+        write(0,*) 'WARNING: Running both lake and nsst on lake points is experimental. Use at your own risk!'
+      endif
+    endif
 
     if(ldiag3d) then
        ! Flags used to turn on or off tracer "causes"
@@ -5522,12 +5817,27 @@ module GFS_typedefs
 !      endif
 
       print *,' nst_anl=',Model%nst_anl,' use_ufo=',Model%use_ufo,' frac_grid=',Model%frac_grid,&
-              ' ignore_lake=',ignore_lake
+              ' ignore_lake=',ignore_lake,' frac_ice=',Model%frac_ice
       print *,' min_lakeice=',Model%min_lakeice,' min_seaice=',Model%min_seaice,                &
               'min_lake_height=',Model%min_lake_height
 
-      print *, 'flake model parameters'
-      print *, 'lkm                : ', Model%lkm
+      print *, 'lake model parameters'
+      print *, ' lake master flag lkm   : ', Model%lkm
+      if(Model%lkm>0) then
+        print *, ' lake model selection   : ', Model%iopt_lake
+        if(Model%iopt_lake==Model%iopt_lake_clm) then
+          print *,'  CLM Lake model configuration'
+          print *,'   use_lake2m             = ',Model%use_lake2m
+          print *,'   clm_lake_use_lakedepth = ',Model%clm_lake_use_lakedepth
+          print *,'   clm_lake_depth_default = ',Model%clm_lake_depth_default
+          print *,'   clm_lake_debug         = ',Model%clm_lake_debug
+          print *,'   nlevlake_clm_lake      = ',Model%nlevlake_clm_lake
+          print *,'   nlevsoil_clm_lake      = ',Model%nlevsoil_clm_lake
+          print *,'   nlevsnow_clm_lake      = ',Model%nlevsnow_clm_lake
+          print *,'   nlevsnowsoil_clm_lake  = ',Model%nlevsnowsoil_clm_lake
+          print *,'   nlevsnowsoil1_clm_lake = ',Model%nlevsnowsoil1_clm_lake
+        endif
+      endif
 
       if (Model%nstf_name(1) > 0 ) then
         print *,' NSSTM is active '
@@ -5561,7 +5871,7 @@ module GFS_typedefs
                print *,' Grell-Freitas scale & aerosol-aware mass-flux deep conv scheme'
             elseif(Model%imfdeepcnv == Model%imfdeepcnv_ntiedtke) then
                print *,' New Tiedtke cumulus scheme'
-            elseif(Model%imfdeepcnv == Model%imfdeepcnv_unified) then
+            elseif(Model%imfdeepcnv == Model%imfdeepcnv_c3) then
                print *,' New unified cumulus convection scheme'
             endif
           endif
@@ -5606,7 +5916,7 @@ module GFS_typedefs
           print *,' Grell-Freitas scale- & aerosol-aware mass-flux shallow conv scheme (2013)'
         elseif (Model%imfshalcnv == Model%imfshalcnv_ntiedtke) then
           print *,' New Tiedtke cumulus scheme'
-        elseif (Model%imfshalcnv == Model%imfshalcnv_unified) then
+        elseif (Model%imfshalcnv == Model%imfshalcnv_c3) then
           print *,' New unified cumulus scheme'
         else
           print *,' unknown mass-flux scheme in use - defaulting to no shallow convection'
@@ -5854,7 +6164,7 @@ module GFS_typedefs
     endif
 
     if(Model%ras     .or. Model%cscnv)  Model%cnvcld = .false.
-    if(Model%do_shoc .or. Model%pdfcld .or. Model%do_mynnedmf .or. Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_unified) Model%cnvcld = .false.
+    if(Model%do_shoc .or. Model%pdfcld .or. Model%do_mynnedmf .or. Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_c3) Model%cnvcld = .false.
     if(Model%cnvcld) Model%ncnvcld3d = 1
 
 !--- get cnvwind index in phy_f2d; last entry in phy_f2d array
@@ -5920,7 +6230,7 @@ module GFS_typedefs
     Model%lmfdeep2 = (Model%imfdeepcnv == Model%imfdeepcnv_samf         &
                       .or. Model%imfdeepcnv == Model%imfdeepcnv_gf      &
                       .or. Model%imfdeepcnv == Model%imfdeepcnv_ntiedtke &
-                      .or. Model%imfdeepcnv == Model%imfdeepcnv_unified)
+                      .or. Model%imfdeepcnv == Model%imfdeepcnv_c3)
 !--- END CODE FROM GLOOPR
 
 !--- BEGIN CODE FROM GLOOPB
@@ -6175,6 +6485,11 @@ module GFS_typedefs
       print *, ' cpl_imp_mrg       : ', Model%cpl_imp_mrg
       print *, ' cpl_imp_dbg       : ', Model%cpl_imp_dbg
       print *, ' use_med_flux      : ', Model%use_med_flux
+      if(Model%imfdeepcnv == Model%imfdeepcnv_gf .or.Model%imfdeepcnv == Model%imfdeepcnv_c3) then
+        print*,'ichoice_s          : ', Model%ichoice_s
+        print*,'ichoicem           : ', Model%ichoicem
+        print*,'ichoice            : ', Model%ichoice
+      endif
       if(model%rrfs_sd) then
         print *, ' '
         print *, 'smoke parameters'
@@ -6317,8 +6632,8 @@ module GFS_typedefs
         print *, ' nssl_alphah - graupel shape parameter : ', Model%nssl_alphah
         print *, ' nssl_alphahl - hail shape parameter   : ', Model%nssl_alphahl
         print *, ' nssl_alphar - rain shape parameter : ', Model%nssl_alphar
-        print *, ' nssl_ehw0_in - graupel-droplet collection effiency : ', Model%nssl_ehw0_in 
-        print *, ' nssl_ehlw0_in - hail-droplet collection effiency : ', Model%nssl_ehlw0_in                              
+        print *, ' nssl_ehw0 - graupel-droplet collection effiency : ', Model%nssl_ehw0 
+        print *, ' nssl_ehlw0 - hail-droplet collection effiency : ', Model%nssl_ehlw0
         print *, ' nssl_hail_on - hail activation flag   : ', Model%nssl_hail_on
         print *, ' lradar - radar refl. flag             : ', Model%lradar
         print *, ' lrefres                : ', Model%lrefres
@@ -6710,6 +7025,10 @@ module GFS_typedefs
       allocate (Grid%ddy_o3    (IM))
       allocate (Grid%jindx1_o3 (IM))
       allocate (Grid%jindx2_o3 (IM))
+
+      Grid%ddy_o3      = clear_val
+      Grid%jindx1_o3   = clear_val
+      Grid%jindx2_o3   = clear_val
     endif
 
 !--- stratosphere h2o active
@@ -6717,6 +7036,10 @@ module GFS_typedefs
       allocate (Grid%ddy_h    (IM))
       allocate (Grid%jindx1_h (IM))
       allocate (Grid%jindx2_h (IM))
+
+      Grid%ddy_h       = clear_val
+      Grid%jindx1_h    = clear_val
+      Grid%jindx2_h    = clear_val
     endif
 
 !--- iccn active
@@ -6727,6 +7050,13 @@ module GFS_typedefs
       allocate (Grid%ddx_ci    (IM))
       allocate (Grid%iindx1_ci (IM))
       allocate (Grid%iindx2_ci (IM))
+
+      Grid%ddy_ci      = clear_val
+      Grid%jindx1_ci   = clear_val
+      Grid%jindx2_ci   = clear_val
+      Grid%ddx_ci      = clear_val
+      Grid%iindx1_ci   = clear_val
+      Grid%iindx2_ci   = clear_val
     endif
 
 !--- iaerclm active
@@ -6737,6 +7067,13 @@ module GFS_typedefs
       allocate (Grid%ddx_aer   (IM))
       allocate (Grid%iindx1_aer(IM))
       allocate (Grid%iindx2_aer(IM))
+
+      Grid%ddy_aer     = clear_val
+      Grid%jindx1_aer  = clear_val
+      Grid%jindx2_aer  = clear_val
+      Grid%ddx_aer     = clear_val
+      Grid%iindx1_aer  = clear_val
+      Grid%iindx2_aer  = clear_val
     endif
 
 !---  Model%do_ugwpv1
@@ -6745,6 +7082,11 @@ module GFS_typedefs
       allocate (Grid%ddy_j2tau  (IM))
       allocate (Grid%jindx1_tau (IM))
       allocate (Grid%jindx2_tau (IM))
+
+      Grid%ddy_j1tau   = clear_val
+      Grid%ddy_j2tau   = clear_val
+      Grid%jindx1_tau  = clear_val
+      Grid%jindx2_tau  = clear_val
    endif
 
  end subroutine grid_create
@@ -6860,7 +7202,7 @@ module GFS_typedefs
     allocate (Tbd%hpbl (IM))
     Tbd%hpbl     = clear_val
 
-    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_ntiedtke .or. Model%imfdeepcnv == Model%imfdeepcnv_samf .or. Model%imfshalcnv == Model%imfshalcnv_samf .or. Model%imfdeepcnv == Model%imfdeepcnv_unified .or. Model%imfshalcnv == Model%imfshalcnv_unified) then
+    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_ntiedtke .or. Model%imfdeepcnv == Model%imfdeepcnv_samf .or. Model%imfshalcnv == Model%imfshalcnv_samf .or. Model%imfdeepcnv == Model%imfdeepcnv_c3 .or. Model%imfshalcnv == Model%imfshalcnv_c3) then
        allocate(Tbd%prevsq(IM, Model%levs))
        Tbd%prevsq = clear_val
     endif
@@ -6870,7 +7212,7 @@ module GFS_typedefs
        Tbd%ud_mf = zero
     endif
 
-    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_ntiedtke .or.  Model%imfdeepcnv == Model%imfdeepcnv_unified) then
+    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or. Model%imfdeepcnv == Model%imfdeepcnv_ntiedtke .or.  Model%imfdeepcnv == Model%imfdeepcnv_c3) then
        allocate(Tbd%forcet(IM, Model%levs))
        allocate(Tbd%forceq(IM, Model%levs))
        allocate(Tbd%prevst(IM, Model%levs))
@@ -6879,7 +7221,7 @@ module GFS_typedefs
        Tbd%prevst = clear_val
     end if
 
-    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or.  Model%imfdeepcnv == Model%imfdeepcnv_unified) then
+    if (Model%imfdeepcnv == Model%imfdeepcnv_gf .or.  Model%imfdeepcnv == Model%imfdeepcnv_c3) then
        allocate(Tbd%cactiv(IM))
        allocate(Tbd%cactiv_m(IM))
        allocate(Tbd%aod_gf(IM))

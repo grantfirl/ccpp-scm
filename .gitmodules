@@ -5,7 +5,7 @@
 [submodule "ccpp-physics"]
 	path = ccpp/physics
 	url = https://github.com/grantfirl/ccpp-physics
-        branch = tiedtke_prog_clouds_updated
+        branch = tiedtke_prog_clouds_20230922
         #url = https://github.com/NCAR/ccpp-physics
 	#branch = main
 [submodule "CMakeModules"]
