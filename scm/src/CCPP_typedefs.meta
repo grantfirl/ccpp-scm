@@ -489,6 +489,14 @@
   type = real
   kind = kind_phys
   active = (do_tiedtke_prognostic_clouds)
+[dcond_ls_l]
+  standard_name = change_in_liquid_cloud_condensate_due_to_nonconvective_condensation
+  long_name = change in liquid cloud condensate due to nonconvective condensation
+  units = kg kg-1
+  dimensions = (horizontal_loop_extent,vertical_layer_dimension)
+  type = real
+  kind = kind_phys
+  active = (do_tiedtke_prognostic_clouds)
 [dcond_ls]		
   standard_name = change_in_cloud_condensate_due_to_nonconvective_condensation
   long_name = change in cloud condensate due to nonconvective condensation
