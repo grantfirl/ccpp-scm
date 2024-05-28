@@ -40,6 +40,8 @@ missing_value = -9999.0 #9.99e20
 
 top_pres_for_forcing = 20000.0
 
+const_nudging_time = 3600.0
+
 n_lam_halo_points = 3
 
 n_forcing_halo_points = 2 #number of points in each direction used to retrieve forcing (1 = 3x3, 2 = 5x5, 3 = 7x7); must be >=1
@@ -82,6 +84,7 @@ parser.add_argument('-sc',  '--save_comp',   help='flag to create UFS reference 
 parser.add_argument('-near','--use_nearest', help='flag to indicate using the nearest UFS history file gridpoint',                         action='store_true')
 parser.add_argument('-fm',  '--forcing_method',  help='method used to calculate forcing (1=total tendencies from UFS dycore, 2=advective terms calculated from UFS history files, 3=total time tendency terms calculated)', type=int, choices=range(1,4), default=2)
 parser.add_argument('-vm',  '--vertical_method', help='method used to calculate vertical advective forcing (1=vertical advective terms calculated from UFS history files and added to total, 2=smoothed vertical velocity provided)', type=int, choices=range(1,3), default=2)
+parser.add_argument('-wn',  '--wind_nudge',  help='flag to turn on wind nudging to UFS profiles', action='store_true')
 parser.add_argument('-geos','--geostrophic', help='flag to turn on geostrophic wind forcing', action='store_true')
 
 ########################################################################################
@@ -106,6 +109,7 @@ def parse_arguments():
     forcing_method = args.forcing_method
     vertical_method = args.vertical_method
     geos_wind_forcing = args.geostrophic
+    wind_nudge  = args.wind_nudge
     
     #validate args
     if not os.path.exists(in_dir):
@@ -145,7 +149,8 @@ def parse_arguments():
             raise Exception(message)
     
     return (location, index, date_dict, in_dir, grid_dir, forcing_dir, tile, \
-            area, case_name, old_chgres, lam, save_comp, use_nearest, forcing_method, vertical_method, geos_wind_forcing)
+            area, case_name, old_chgres, lam, save_comp, use_nearest, forcing_method, \
+            vertical_method, geos_wind_forcing, wind_nudge)
 
 ########################################################################################
 #
@@ -1826,7 +1831,7 @@ def search_in_dict(listin,name):
         if dictionary["name"] == name:
             return count
 
-def get_UFS_forcing_data_advective_tendency(dir, i, j, tile, neighbors, dx, dy, nlevs, lam, save_comp_data, vertical_method, geos_wind_forcing):
+def get_UFS_forcing_data_advective_tendency(dir, i, j, tile, neighbors, dx, dy, nlevs, lam, save_comp_data, vertical_method, geos_wind_forcing, wind_nudge):
     
     # Determine UFS history file format (tiled/quilted)
     if lam:
@@ -2187,7 +2192,9 @@ def get_UFS_forcing_data_advective_tendency(dir, i, j, tile, neighbors, dx, dy, 
         "tnua_adv": h_advec_u[:,:] + v_advec_u[:,:],
         "tnva_adv": h_advec_v[:,:] + v_advec_v[:,:],
         "ug"      : u_g[:,:],
-        "vg"      : v_g[:,:]
+        "vg"      : v_g[:,:],
+        "ua_nud"  : u_wind[:,:,center,center],
+        "va_nud"  : v_wind[:,:,center,center]
     }
     
     if (save_comp_data):
@@ -3000,7 +3007,7 @@ def get_UFS_forcing_data(nlevs, state_IC, location, use_nearest, forcing_dir, gr
 ########################################################################################
 #
 ########################################################################################
-def write_SCM_case_file(state, surface, oro, forcing, init, case, date, forcing_method, vertical_method, geos_wind_forcing):
+def write_SCM_case_file(state, surface, oro, forcing, init, case, date, forcing_method, vertical_method, geos_wind_forcing, wind_nudge):
     """Write all data to a netCDF file in the DEPHY-SCM format"""
 
     # Working types
@@ -3015,7 +3022,7 @@ def write_SCM_case_file(state, surface, oro, forcing, init, case, date, forcing_
     com = 'mkdir -p ' + PROCESSED_CASE_DIR
     print(com)
     os.system(com)
-    fileOUT = os.path.join(PROCESSED_CASE_DIR, case + '_fm_{}'.format(forcing_method) + ('_vm_{}'.format(vertical_method) if forcing_method == 2 else '') + ('_geos' if geos_wind_forcing else '') + '_SCM_driver.nc')
+    fileOUT = os.path.join(PROCESSED_CASE_DIR, case + '_fm_{}'.format(forcing_method) + ('_vm_{}'.format(vertical_method) if forcing_method == 2 else '') + ('_geos' if geos_wind_forcing else '') + ('_wind_nudge' if wind_nudge else '') + '_SCM_driver.nc')
 
     nc_file = Dataset(fileOUT, 'w', format='NETCDF3_CLASSIC')
     nc_file.description = "FV3GFS model profile input (UFS forcings)"
@@ -3076,8 +3083,12 @@ def write_SCM_case_file(state, surface, oro, forcing, init, case, date, forcing_
         nc_file.forc_geo      = forcing_on
     else:
         nc_file.forc_geo      = forcing_off
-    nc_file.nudging_ua        = forcing_off
-    nc_file.nudging_va        = forcing_off
+    if (wind_nudge):
+        nc_file.nudging_ua    = forcing_on*const_nudging_time
+        nc_file.nudging_va    = forcing_on*const_nudging_time
+    else:
+        nc_file.nudging_ua    = forcing_off
+        nc_file.nudging_va    = forcing_off
     nc_file.nudging_ta        = forcing_off
     nc_file.nudging_theta     = forcing_off
     nc_file.nudging_thetal    = forcing_off
@@ -3573,7 +3584,7 @@ def main():
     
     #read in arguments
     (location, indices, date, in_dir, grid_dir, forcing_dir, tile, area, case_name, 
-     old_chgres, lam, save_comp, use_nearest, forcing_method, vertical_method, geos_wind_forcing) = parse_arguments()
+     old_chgres, lam, save_comp, use_nearest, forcing_method, vertical_method, geos_wind_forcing, wind_nudge) = parse_arguments()
     
     #find indices corresponding to both UFS history files and initial condition (IC) files
     (hist_i, hist_j, hist_lon, hist_lat, hist_dist_min, angle_to_hist_point, neighbors, dx, dy) = find_loc_indices_UFS_history(location, forcing_dir)
@@ -3630,7 +3641,7 @@ def main():
                                                                     grid_dir, tile, IC_i, IC_j, lam,\
                                                                     save_comp, exact_mode)
     elif forcing_method == 2:
-        (forcing_data, comp_data) = get_UFS_forcing_data_advective_tendency(forcing_dir, hist_i, hist_j, tile, neighbors, dx, dy, state_data["nlevs"], lam, save_comp, vertical_method, geos_wind_forcing)
+        (forcing_data, comp_data) = get_UFS_forcing_data_advective_tendency(forcing_dir, hist_i, hist_j, tile, neighbors, dx, dy, state_data["nlevs"], lam, save_comp, vertical_method, geos_wind_forcing, wind_nudge)
     elif forcing_method == 3:
         exact_mode = False
         (forcing_data, comp_data, stateInit) = get_UFS_forcing_data(state_data["nlevs"], state_data,    \
@@ -3644,7 +3655,7 @@ def main():
     
     
     # Write SCM case file
-    fileOUT = write_SCM_case_file(state_data, surface_data, oro_data, forcing_data, stateInit, case_name, date, forcing_method, vertical_method, geos_wind_forcing)
+    fileOUT = write_SCM_case_file(state_data, surface_data, oro_data, forcing_data, stateInit, case_name, date, forcing_method, vertical_method, geos_wind_forcing, wind_nudge)
 
     # read in and remap the state variables to the first history file pressure profile and 
     # write them out to compare SCM output to (atmf for state variables and sfcf for physics 
