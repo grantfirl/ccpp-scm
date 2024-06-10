@@ -211,9 +211,9 @@ elseif (${CMAKE_Fortran_COMPILER_ID} MATCHES "NVHPC")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O2")
   endif()
 
-  set(MPI_C_COMPILER mpicc)
-  set(MPI_CXX_COMPILER mpicxx)
-  set(MPI_Fortran_COMPILER mpif90)
+  set(MPI_C_COMPILER nvc)
+  set(MPI_CXX_COMPILER nvcc)
+  set(MPI_Fortran_COMPILER nvfortran)
   
   set(CMAKE_C_FLAGS_RELEASE       "-O2 -fPIC" CACHE STRING "" FORCE)
   set(CMAKE_Fortran_FLAGS_RELEASE "-O2 -fPIC" CACHE STRING "" FORCE)
