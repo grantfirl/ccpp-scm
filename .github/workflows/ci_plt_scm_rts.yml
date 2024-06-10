@@ -68,4 +68,4 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: bl-plots-${{matrix.build-type}}
-        path: /home/runner/work/ccpp-scm/ccpp-scm/test/scm_rt_out
+        path: /home/runner/work/ccpp-scm/ccpp-scm/test/scm_bl_out
