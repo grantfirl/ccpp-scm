@@ -1,0 +1,68 @@
+name: CI test to plot SCM regression tests.
+
+on: [pull_request, workflow_dispatch]
+
+jobs:
+  run_scm_rts:
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        build-type: [Release, Debug]
+        py-version: [3.9.12]
+
+    # Environmental variables
+    env:
+      SCM_ROOT: /home/runner/work/ccpp-scm/ccpp-scm
+      dir_bl:   /home/runner/work/ccpp-scm/ccpp-scm/test/BL-${{matrix.build-type}}
+
+    # Workflow steps
+    steps:
+    #######################################################################################
+    # Initial
+    #######################################################################################
+    - name: Checkout SCM code (into /home/runner/work/ccpp-scm/)
+      uses: actions/checkout@v3
+
+    - name: Initialize submodules
+      run: git submodule update --init --recursive
+
+    #######################################################################################
+    # Python setup
+    #######################################################################################
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{matrix.py-version}}
+
+    - name: Add conda to system path
+      run: |
+        echo $CONDA/bin >> $GITHUB_PATH
+
+    - name: Install NetCDF Python libraries
+      run: |
+        conda install --yes -c conda-forge h5py>=3.4 netCDF4 f90nml matplotlib
+
+    - name: Update system packages
+      run: sudo apt-get update
+
+    #######################################################################################
+    # Plot latest SCM regression tests baselines
+    #######################################################################################
+    - name: Download SCM regression tests baselines.
+      run: |
+        cd ${dir_bl}
+        wget https://dtcenter.ucar.edu/ccpp/users/rt/rt-baselines-${{matrix.build-type}}.zip
+        unzip rt-baselines-${{matrix.build-type}}.zip
+
+    - name: Plot SCM regression test baselines.
+      run: |
+        cd ${SCM_ROOT}/test
+        ./cmp_rt2bl.py --dir_rt ${dir_bl}
+
+    - name: Upload plots of SCM baselines as GitHub Artifact.
+      uses: actions/upload-artifact@v2
+      with:
+        name: bl-plots-${{matrix.build-type}}
+        path: /home/runner/work/ccpp-scm/ccpp-scm/test/scm_rt_out
