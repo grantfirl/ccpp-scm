@@ -106,13 +106,15 @@ jobs:
         command -v nvfortran
         echo "Removing tarball"
         rm nvhpc_2024_241_Linux_x86_64_cuda_12.3.tar.gz
+        echo "SWALES"
+        ls /home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/
 
     - name: Set environment for Nvidia compiler.
       run: |
         echo "CC=/home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/nvc" >> $GITHUB_ENV
         echo "FC=/home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/nvfortran" >> $GITHUB_ENV
-        echo "CMAKE_C_COMPILER=/home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/mpicc" >> $GITHUB_ENV
-        echo "CMAKE_Fortran_COMPILER=/home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/mpifort" >> $GITHUB_ENV
+        echo "CMAKE_C_COMPILER=/home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/nvc" >> $GITHUB_ENV
+        echo "CMAKE_Fortran_COMPILER=/home/runner/hpc_sdk/Linux_x86_64/24.1/compilers/bin/nvfortran" >> $GITHUB_ENV
 
     #######################################################################################
     # Install FORTRAN dependencies
