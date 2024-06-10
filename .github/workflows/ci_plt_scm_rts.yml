@@ -62,7 +62,7 @@ jobs:
     - name: Plot SCM regression test baselines.
       run: |
         cd ${SCM_ROOT}/test
-        ./cmp_scmout.py --dir_rt ${dir_bl}
+        ./plt_scm_bl.py --dir_bl ${dir_bl}
 
     - name: Upload plots of SCM baselines as GitHub Artifact.
       uses: actions/upload-artifact@v2
