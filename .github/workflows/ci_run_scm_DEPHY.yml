@@ -10,7 +10,7 @@ jobs:
     strategy:
       matrix:
         fortran-compiler: [gfortran-12]
-        py-version:       [3.7.13]
+        py-version:       [3.9.12]
 
     # Environmental variables
     env:
