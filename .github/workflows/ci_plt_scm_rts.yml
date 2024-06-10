@@ -1,4 +1,4 @@
-name: CI test to plot SCM regression tests.
+name: CI test to plot SCM regression test baseliness.
 
 on: [pull_request, workflow_dispatch]
 
@@ -50,6 +50,9 @@ jobs:
     #######################################################################################
     # Plot latest SCM regression tests baselines
     #######################################################################################
+    - name: Create directory for SCM RT baselines
+      run: mkdir ${dir_bl}
+
     - name: Download SCM regression tests baselines.
       run: |
         cd ${dir_bl}
