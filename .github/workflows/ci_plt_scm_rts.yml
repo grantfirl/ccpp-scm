@@ -1,9 +1,9 @@
-name: CI test to plot SCM regression test baseliness.
+name: Plot CCPP-SCM RT baselines.
 
 on: [pull_request, workflow_dispatch]
 
 jobs:
-  run_scm_rts:
+  plt_scm_rts:
 
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
@@ -62,7 +62,7 @@ jobs:
     - name: Plot SCM regression test baselines.
       run: |
         cd ${SCM_ROOT}/test
-        ./cmp_rt2bl.py --dir_rt ${dir_bl}
+        ./cmp_scmout.py --dir_rt ${dir_bl}
 
     - name: Upload plots of SCM baselines as GitHub Artifact.
       uses: actions/upload-artifact@v2

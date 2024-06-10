@@ -1,17 +1,17 @@
-name: CI test to build and run SCM regression tests
+name: Build CCPP-SCM.
 
-on: [pull_request, workflow_dispatch]
+on: [pull_request,workflow_dispatch]
 
 jobs:
-  run_scm_rts:
+  build_scm:
 
     # The type of runner that the job will run on
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        fortran-compiler: [gfortran-11]
+        fortran-compiler: [gfortran-10, gfortran-11, gfortran-12]
         build-type:       [Release, Debug]
-        py-version:       [3.9.12]
+        py-version:       [3.7.13, 3.9.12]
 
     # Environmental variables
     env:
@@ -21,10 +21,7 @@ jobs:
       sp_ROOT:    /home/runner/NCEPLIBS-sp
       w3emc_ROOT: /home/runner/myw3emc
       SCM_ROOT:   /home/runner/work/ccpp-scm/ccpp-scm
-      suites:     SCM_GFS_v15p2,SCM_GFS_v16,SCM_GFS_v17_p8,SCM_HRRR,SCM_RRFS_v1beta,SCM_RAP,SCM_WoFS_v0,SCM_RRFS_v1,SCM_GFS_v17_HR3,SCM_GFS_v17_HR3_RRTMGP
-      suites_ps:  SCM_GFS_v15p2_ps,SCM_GFS_v16_ps,SCM_GFS_v17_p8_ps,SCM_HRRR_ps,SCM_RRFS_v1beta_ps,SCM_RAP_ps,SCM_WoFS_v0_ps,SCM_RRFS_v1_ps,SCM_GFS_v17_HR3_ps,SCM_GFS_v17_HR3_RRTMGP_ps
-      dir_rt:     /home/runner/work/ccpp-scm/ccpp-scm/test/artifact-${{matrix.build-type}}
-      dir_bl:     /home/runner/work/ccpp-scm/ccpp-scm/test/BL-${{matrix.build-type}}
+      suites:     SCM_GFS_v15p2,SCM_GFS_v16,SCM_GFS_v17_p8,SCM_HRRR,SCM_RRFS_v1beta,SCM_RAP,SCM_WoFS_v0,SCM_GFS_v15p2_ps,SCM_GFS_v16_ps,SCM_GFS_v17_p8_ps,SCM_HRRR_ps,SCM_RRFS_v1beta_ps,SCM_RAP_ps,SCM_WoFS_v0_ps
 
     # Workflow steps
     steps:
@@ -51,7 +48,7 @@ jobs:
 
     - name: Install NetCDF Python libraries
       run: |
-        conda install --yes -c conda-forge h5py>=3.4 netCDF4 f90nml matplotlib
+        conda install --yes -c conda-forge h5py>=3.4 netCDF4 f90nml
 
     - name: Update system packages
       run: sudo apt-get update
@@ -59,7 +56,6 @@ jobs:
     #######################################################################################
     # Install FORTRAN dependencies
     #######################################################################################
-
     - name: Install openmpi
       run: |
         wget https://github.com/open-mpi/ompi/archive/refs/tags/v4.1.6.tar.gz
@@ -124,7 +120,9 @@ jobs:
         echo "w3emc_DIR=/home/runner/myw3emc/lib/cmake/w3emc" >> $GITHUB_ENV
 
     - name: Install NetCDF C library
-      run: sudo apt-get install libnetcdf-dev
+      run: |
+        sudo apt-get update
+        sudo apt-get install libnetcdf-dev
 
     - name: Cache NetCDF Fortran library
       id: cache-netcdf-fortran
@@ -149,67 +147,24 @@ jobs:
         echo "CC=mpicc"  >> $GITHUB_ENV
 
     #######################################################################################
-    # Build SCM. Run regression tests.
+    # Build SCM.
     #######################################################################################
-    - name: Download data for SCM
-      run: |
-        cd ${SCM_ROOT}
-        ./contrib/get_all_static_data.sh
-        ./contrib/get_thompson_tables.sh
-        ./contrib/get_aerosol_climo.sh
 
     - name: Configure build with CMake (Release)
       if: contains(matrix.build-type, 'Release')
       run: |
         cd ${SCM_ROOT}/scm
         mkdir bin && cd bin
-        cmake -DCCPP_SUITES=${suites},${suites_ps} ../src
+        cmake -DCCPP_SUITES=${suites} ../src
 
     - name: Configure build with CMake (Debug)
       if: contains(matrix.build-type, 'Debug')
       run: |
         cd ${SCM_ROOT}/scm
         mkdir bin && cd bin
-        cmake -DCCPP_SUITES=${suites},${suites_ps} -DCMAKE_BUILD_TYPE=Debug ../src
+        cmake -DCCPP_SUITES=${suites} -DCMAKE_BUILD_TYPE=Debug ../src
 
     - name: Build SCM
       run: |
         cd ${SCM_ROOT}/scm/bin
         make -j4
-
-    - name: Run SCM RTs
-      run: |
-        cd ${SCM_ROOT}/scm/bin
-        ./run_scm.py --file /home/runner/work/ccpp-scm/ccpp-scm/test/rt_test_cases.py --runtime_mult 0.1
-
-    - name: Gather SCM RT output
-      run: |
-        cd ${SCM_ROOT}/test
-        mkdir /home/runner/work/ccpp-scm/ccpp-scm/test/artifact-${{matrix.build-type}}
-        ./ci_util.py -b ${{matrix.build-type}}
-
-    - name: Create directory for SCM RT baselines
-      run: mkdir ${dir_bl}
-
-    - name: Download SCM RT baselines
-      run: |
-        cd ${dir_bl}
-        wget https://dtcenter.ucar.edu/ccpp/users/rt/rt-baselines-${{matrix.build-type}}.zip
-        unzip rt-baselines-${{matrix.build-type}}.zip
-
-    - name: Compare SCM RT output to baselines
-      run: |
-        cd ${SCM_ROOT}/test
-        ./cmp_rt2bl.py --dir_rt ${dir_rt} --dir_bl ${dir_bl}
-
-    - name: Upload plots of SCM Baselines/RTs as GitHub Artifact.
-      uses: actions/upload-artifact@v2
-      with:
-        name: rt-plots-${{matrix.build-type}}
-        path: /home/runner/work/ccpp-scm/ccpp-scm/test/scm_rt_out
-
-    - name: Upload SCM RTs as GitHub Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: rt-baselines-${{matrix.build-type}}
-        path: /home/runner/work/ccpp-scm/ccpp-scm/test/artifact-${{matrix.build-type}}

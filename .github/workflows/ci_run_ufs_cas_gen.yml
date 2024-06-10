@@ -1,4 +1,4 @@
-name: CI test to create SCM UFS-replay cases from UWM regression tests
+name: Run UFS case generator.
 
 on: [pull_request,workflow_dispatch]
 

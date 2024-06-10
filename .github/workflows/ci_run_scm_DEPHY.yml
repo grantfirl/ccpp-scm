@@ -1,4 +1,4 @@
-name: CI test to run the SCM with DEPHY v1 data
+name: Run CCPP-SCM (DEPHY).
 
 on: [pull_request,workflow_dispatch]
 

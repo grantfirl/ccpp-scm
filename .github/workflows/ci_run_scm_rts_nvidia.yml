@@ -1,4 +1,4 @@
-name: CI test to build the CCPP-SCM on ubuntu v22.04
+name: Build CCPP-SCM.
 
 on: [pull_request,workflow_dispatch]
 
