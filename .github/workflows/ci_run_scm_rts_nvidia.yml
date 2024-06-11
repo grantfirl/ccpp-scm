@@ -98,7 +98,7 @@ jobs:
         wget -q https://developer.download.nvidia.com/hpc-sdk/24.1/nvhpc_2024_241_Linux_x86_64_cuda_12.3.tar.gz
         tar xpzf nvhpc_2024_241_Linux_x86_64_cuda_12.3.tar.gz
         nvhpc_2024_241_Linux_x86_64_cuda_12.3/install
-	export PATH=${PATH}:${NVCOMPILERS}/${NVARCH}/24.1/compilers/bin
+        export PATH=${PATH}:${NVCOMPILERS}/${NVARCH}/24.1/compilers/bin
         export PATH=${PATH}:${NVCOMPILERS}/${NVARCH}/24.1/comm_libs/mpi/bin
         export MANPATH=${MANPATH}:${NVCOMPILERS}/${NVARCH}/24.1/compilers/man
         echo "The mpifort installed is:"
