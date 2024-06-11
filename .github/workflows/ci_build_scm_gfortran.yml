@@ -9,9 +9,9 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        fortran-compiler: gfortran-12#[gfortran-10, gfortran-11, gfortran-12]
-        build-type:       Debug#[Release, Debug]
-        py-version:       3.9.12#[3.7.13, 3.9.12]
+        fortran-compiler: [gfortran-12]#[gfortran-10, gfortran-11, gfortran-12]
+        build-type:       [Debug]#[Release, Debug]
+        py-version:       [3.9.12]#[3.7.13, 3.9.12]
 
     # Environmental variables
     env:
