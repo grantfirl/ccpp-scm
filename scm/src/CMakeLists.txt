@@ -71,6 +71,7 @@ find_package(NetCDF REQUIRED COMPONENTS C Fortran)
 find_package(bacio REQUIRED)
 find_package(sp    REQUIRED)
 find_package(w3emc REQUIRED)
+find_package(MPI   REQUIRED Fortran)
 
 SET(CCPP_FRAMEWORK_SRC ${CMAKE_SOURCE_DIR}/../../ccpp/framework)
 SET(CCPP_PHYSICS_SRC ${CMAKE_SOURCE_DIR}/../../ccpp/physics)
