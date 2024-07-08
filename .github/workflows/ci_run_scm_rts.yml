@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        fortran-compiler: [gfortran-11]
+        fortran-compiler: [gfortran-12]
         build-type:       [Release, Debug, SinglePrecision]
         py-version:       [3.9.12]
 
