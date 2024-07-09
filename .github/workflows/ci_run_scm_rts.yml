@@ -11,7 +11,7 @@ jobs:
       matrix:
         fortran-compiler: [gfortran-13]
         build-type:       [Release, Debug, SinglePrecision]
-        py-version:       [3.9.12]
+        py-version:       [3.12.3]
 
     # Environmental variables
     env:
