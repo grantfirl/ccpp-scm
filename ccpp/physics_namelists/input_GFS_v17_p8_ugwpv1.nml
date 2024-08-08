@@ -132,7 +132,7 @@
   cplwav2atm   = .false.
   cpllnd       = .false.
   cpllnd2atm   = .false.
-  do_ca        = .true.
+  do_ca        = .false.
   ca_global    = .false.
   ca_sgs       = .true.
   nca          = 1
