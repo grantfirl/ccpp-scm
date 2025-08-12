@@ -131,6 +131,8 @@ subroutine output_init(scm_state, physics)
     CALL CHECK(NF90_PUT_VAR(NCID=ncid,VARID=time_swrad_var_id,VALUES=0.0,START=(/ 1 /)),"nf90_put_var(time_swrad_var)")
     missing_value_2D = missing_value
     call NetCDF_put_var(ncid, "sw_rad_heating_rate",  missing_value_2D, 1)
+    call NetCDF_put_var(ncid, "sw_up_sfc_tot",  missing_value_1D, 1)
+    call NetCDF_put_var(ncid, "sw_dn_sfc_tot",  missing_value_1D, 1)
   end if
   if (physics%Model%nslwr <= 0) then
     !write out missing values at the initial time
@@ -309,6 +311,9 @@ subroutine output_init_radtend(ncid, time_swrad_id, time_lwrad_id, hor_dim_id, v
   
   call NetCDF_def_var(ncid, 'sw_rad_heating_rate', NF90_FLOAT, "total sky shortwave radiative heating rate (radiation timesteps only)", "K s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_swrad_id /))
   call NetCDF_def_var(ncid, 'lw_rad_heating_rate', NF90_FLOAT, "total sky longwave radiative heating rate (radiation timesteps only)",  "K s-1", dummy_id, (/ hor_dim_id, vert_dim_id, time_lwrad_id /))
+  
+  call NetCDF_def_var(ncid, 'sw_up_sfc_tot', NF90_FLOAT, "upward total sky shortwave flux at surface(radiation timesteps only)", "W m-2", dummy_id, (/ hor_dim_id, time_swrad_id /))
+  call NetCDF_def_var(ncid, 'sw_dn_sfc_tot', NF90_FLOAT, "downward total sky shortwave flux at surface (radiation timesteps only)", "W m-2", dummy_id, (/ hor_dim_id, time_swrad_id /))
   
 end subroutine output_init_radtend
 
@@ -662,6 +667,8 @@ subroutine output_append_radtend(ncid, scm_state, physics)
     
     if (physics%Model%lsswr) then
       call NetCDF_put_var(ncid, "sw_rad_heating_rate",  physics%Radtend%htrsw(:,:), scm_state%itt_swrad)
+      call NetCDF_put_var(ncid, "sw_up_sfc_tot",  physics%Radtend%sfcfsw(:)%upfxc, scm_state%itt_swrad)
+      call NetCDF_put_var(ncid, "sw_dn_sfc_tot",  physics%Radtend%sfcfsw(:)%dnfxc, scm_state%itt_swrad)
     end if
     if (physics%Model%lslwr) then
       call NetCDF_put_var(ncid, "lw_rad_heating_rate",  physics%Radtend%htrlw(:,:), scm_state%itt_lwrad)
